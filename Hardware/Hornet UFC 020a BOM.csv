@@ -1,0 +1,98 @@
+"Part;""Value"";""Device"";""Package"";""Description"";""MF"";""MPN"";""OC_FARNELL"";""OC_NEWARK"";""PACKAGE"";""SPICEPREFIX"";""SUPPLIER"";""TP_SIGNAL_NAME"";",
+"#0;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#1;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#2;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#3;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#4;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#5;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#6;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#7;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#8;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"#9;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"74HC138;""CD74HC138M"";""CD74HC138M"";""SOIC127P600X175-16N"";""High-Speed CMOS Logic 3- to 8-Line Decoder/Demultiplexer Inverting and Noninverting"";"""";""CD74HC138M"";""1640756"";""66F5206"";""SOIC-16"";"""";""Texas Instruments"";"""";",
+"A/P;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ADF;""ADF"";""JST-PH-B2B-SM3SOLDER"";""B3B-PH-SOLDER"";""JST PH Connector 2mm Pitch (3 Pin)"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"BCN;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"BLANK;"""";""SOLDERJUMPERCLOSED"";""SOLDERJUMPER_CLOSEDWIRE"";""SMD Solder JUMPER"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"BRT;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"C2;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C3;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C4;""0.1uF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C5;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C6;""0.1uF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C7;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C8;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C9;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C10;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C11;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C12;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"C13;""100nF"";""C-EUC0805"";""C0805"";""CAPACITOR"," European symbol"";"""";"""";"""";"""";"""";"""";"""";"""";"
+"CHANNEL1;""16-SEG_THROUGH_HOLEPSC05-11"";""16-SEG_THROUGH_HOLEPSC05-11"";""PSC05-11"";""16 SEGMENT SINGLE DIGIT ALPHANUMERIC NUMERIC DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"CHANNEL2;""16-SEG_THROUGH_HOLEPSC05-11"";""16-SEG_THROUGH_HOLEPSC05-11"";""PSC05-11"";""16 SEGMENT SINGLE DIGIT ALPHANUMERIC NUMERIC DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"CLR;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"CN2;""JST-PH-B4B-PH-SM4THRU-HOLE"";""JST-PH-B4B-PH-SM4THRU-HOLE"";""B4B-PH-SOLDER"";""JST PH 4 Pin (2.00"")"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D/L;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D1;""BAT54TW-7-F"";""BAT54TW-7-F"";""SSOT6"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D2;""BAT54TW-7-F"";""BAT54TW-7-F"";""SSOT6"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D3;"""";""LED3MM_V_OFFSET"";""LED5X2MM_RECT_3MM_VOFFSET"";""LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D5;"""";""LED3MM_V_OFFSET"";""LED5X2MM_RECT_3MM_VOFFSET"";""LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D7;"""";""LED3MM_V_OFFSET"";""LED5X2MM_RECT_3MM_VOFFSET"";""LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D9;"""";""LED3MM_V_OFFSET"";""LED5X2MM_RECT_3MM_VOFFSET"";""LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"D11;"""";""LED3MM_V_OFFSET"";""LED5X2MM_RECT_3MM_VOFFSET"";""LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"DIS1;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"DIS2;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"DIS3;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"EMCON;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ENC_1;""JST-PH-B4B-PH-SM4THRU-HOLE"";""JST-PH-B4B-PH-SM4THRU-HOLE"";""B4B-PH-SOLDER"";""JST PH 4 Pin (2.00"")"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ENT;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"I/P;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"IFF;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ILS;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU1;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU2;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU3;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU4;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU5;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU_DSP_1;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU_DSP_2;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU_DSP_3;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU_DSP_4;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ODU_DSP_5;""HDLX2416SOCKETED"";""HDLX2416SOCKETED"";""HDLX2416(SOCKETED)"";""LED DISPLAY"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"ON/OFF;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"R1;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R2;""10K"";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R5;"""";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R7;"""";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R9;"""";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R10;"""";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R11;"""";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R12;"""";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R14;""10K"";""R-EU_R0805"";""R0805"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R49;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R50;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R51;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R52;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R53;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R54;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R55;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R56;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R57;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R58;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R59;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"R60;""39K"";""R-EU_R1206"";""R1206"";""RESISTOR"," European symbol"";"""";"""";"""";"""";"""";""R"";"""";"""";"
+"SV2;"""";""MA20-2"";""MA20-2"";""PIN HEADER"";"""";"""";""unknown"";""unknown"";"""";"""";"""";"""";",
+"SW1;""ADF_SMALL"";""MICRO_TOGGLE_SPDT_TOP"";""MICRO_TOGGLE_SPDT"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"TCN;""GATERON-LED"";""GATERON-LED"";""GATERON-LED"";""Gateron keyswitch with LED"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"TP1;""PTR1TP13SQ"";""PTR1TP13SQ"";""TP13SQ"";""TEST PIN"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"TP2;""PTR1TP13SQ"";""PTR1TP13SQ"";""TP13SQ"";""TEST PIN"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"TP3;""PTR1TP13SQ"";""PTR1TP13SQ"";""TP13SQ"";""TEST PIN"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"TP4;""PTR1TP13SQ"";""PTR1TP13SQ"";""TP13SQ"";""TEST PIN"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$4;""ENC_RGB_L"";""ENCODER_RGB_SWITCHTHROUGHHOLE"";""ENCODER_RGB"";""RGB Switched Rotary Encoder With Switch EC12PRGBSDVBF-D-25K-24-24C-6108-6H"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$5;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$7;""PCF8575CTSSOP24"";""PCF8575CTSSOP24"";""TSSOP24"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$11;""ENC_RGB_R"";""ENCODER_RGB_SWITCHTHROUGHHOLE"";""ENCODER_RGB"";""RGB Switched Rotary Encoder With Switch EC12PRGBSDVBF-D-25K-24-24C-6108-6H"";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$21;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$31;""Addr 0x71"";""HOLTEK_HT16K33"";""SOIC28"";""Holtek HT16K33RAM Mapping 16*8 LED Controller Driver with keyscanOrigianlly tested with the AdaFruit breakout board"," the chip is described here."";"""";"""";"""";"""";"""";"""";"""";"""";"
+"U$37;""OLED_128X32_I2C_DISPLAYMODULE"";""OLED_128X32_I2C_DISPLAYMODULE"";""OLED128X32_GRAPHICS_MODULE"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"VOL1;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"VOL2;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
