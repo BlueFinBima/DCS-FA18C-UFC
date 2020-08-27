@@ -33,7 +33,7 @@ const char * networkPswd = "Your WiFi Password";
 // either use the ip address of the server or 
 // a network broadcast address
 const char * udpAddress = "10.1.1.4";
-const uint16_t udpPort = 3339;
+const uint16_t udpPort = 9089;
 IPAddress ip;
 IPAddress ipRemote;
 uint16_t portRemote = 0;
