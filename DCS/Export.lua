@@ -10,7 +10,7 @@ PrevExport.LuaExportActivityNextEvent = LuaExportActivityNextEvent
 local scriptDebug = 0
 
 local lHost = "10.1.1.17"
-local lPort = 3339
+local lPort = 9089
 local lInterval = 0.067
 local lLowTickInterval = 1
 local c
