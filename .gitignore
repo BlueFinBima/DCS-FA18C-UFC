@@ -3,3 +3,7 @@
 *.log
 Software/DCS Hornet ESP32/WiFiInfo.h
 *.db
+*.[do]
+*.elf
+*.bin
+*.ipch

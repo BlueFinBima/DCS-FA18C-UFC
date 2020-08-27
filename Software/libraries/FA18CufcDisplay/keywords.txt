@@ -1,0 +1,23 @@
+#######################################
+# Syntax Coloring Map Servo
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+FA18CufcDisplay KEYWORD1
+FA18CufcDisplay.h KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+clear	        KEYWORD2
+blank   		KEYWORD2
+display			KEYWORD2
+oduDisplay      KEYWORD2
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+FA18CufcDisplay LITERAL1
