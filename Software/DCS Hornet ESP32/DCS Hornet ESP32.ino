@@ -19,7 +19,34 @@
 #include <OLED_I2C.h>                 // Library for the OLED display without serial board 4-bit
 #include "RotaryEncoderAdvanced.h"    // enjoyneering Rotary Encoder functions
 #include "RotaryEncoderAdvanced.cpp"  //for some reason linker can't find the *.cpp :(
-#include "WiFiInfo.h"               // Personal Wifi information     
+#include "WiFiInfo.h"               // Personal Wifi information
+#include <DNSServer.h>				// https://github.com/prampec/IotWebConf
+#include <WebServer.h>				// https://github.com/prampec/IotWebConf
+#include <IotWebConf.h>				// https://github.com/prampec/IotWebConf
+
+#define CONFIG_VERSION "UFC001"
+const char apName[] = "BlueFinBima UFC";
+const char wifiInitialApPassword[] = "bluefinbima";
+// -- Callback method declarations.
+void iotWebConfConfigSaved();
+boolean htmlFormValidator();
+
+DNSServer dnsServer;
+WebServer server(80);
+
+#define STRING_LEN 16
+IPAddress ipAddress;
+IPAddress gateway;
+IPAddress netmask;
+char ipAddressValue[STRING_LEN];
+char gatewayValue[STRING_LEN];
+char netmaskValue[STRING_LEN];
+
+IotWebConf iotWebConf(apName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
+IotWebConfParameter ipAddressParam = IotWebConfParameter("IP address", "ipAddress", ipAddressValue, STRING_LEN, "text", NULL, "10.1.1.48");
+IotWebConfParameter gatewayParam = IotWebConfParameter("Gateway", "gateway", gatewayValue, STRING_LEN, "text", NULL, "10.1.1.1");
+IotWebConfParameter netmaskParam = IotWebConfParameter("Subnet mask", "netmask", netmaskValue, STRING_LEN, "text", NULL, "255.255.255.0");
+
 
 // WiFi network name and password:
 #ifdef SSID
@@ -32,7 +59,7 @@ const char * networkPswd = "Your WiFi Password";
 //IP address to send UDP data to:
 // either use the ip address of the server or 
 // a network broadcast address
-const char * udpAddress = "10.1.1.4";
+const char * udpAddress = "0.0.0.0";
 const uint16_t udpPort = 9089;
 IPAddress ip;
 IPAddress ipRemote;
@@ -42,17 +69,17 @@ uint16_t portRemote = 0;
 AsyncUDP udp;
 
 // the Export send code does a >576 test before sending so the max data is going to be 576 + length of the longest command
-char packetBuffer[MAXPACKETSIZE];     // network buffer to hold incoming packet
-volatile int packetLen = 0;      // length of the data in the packet buffer 
-char cmdBuffer[MAXPACKETSIZE];        // this is a buffer to hold a single command (there can be long text command values
-char cmdValStrBuffer[32];             // Used for the conversion of the comand value
-char replyBuffer[32];                 // a string to send back
-boolean connected = false;            // Indicate if we are currently connected
-									  // Constructor for the UDP library class
-unsigned long time1 = 0;                     // Used to calculate loop delay
-unsigned long time2 = 0;                     // Used to calculate loop delay
-											 //
-											 // These are the response which checking keys can return
+char packetBuffer[MAXPACKETSIZE];		// network buffer to hold incoming packet
+volatile int packetLen = 0;				// length of the data in the packet buffer 
+char cmdBuffer[MAXPACKETSIZE];			// this is a buffer to hold a single command (there can be long text command values
+char cmdValStrBuffer[32];				// Used for the conversion of the comand value
+char replyBuffer[32];					// a string to send back
+bool connected = false;					// Indicate if we are currently connected
+										// Constructor for the UDP library class
+unsigned long time1 = 0;                // Used to calculate loop delay
+unsigned long time2 = 0;                // Used to calculate loop delay
+										//
+										// These are the response which checking keys can return
 #define SWITCHNONE 0 
 #define SWITCHWAIT 1
 #define SWITCHSET 2
@@ -87,7 +114,7 @@ const uint8_t i2c_addr_ufc_mux = 0x70;       // i2c multiplexer on the F/A-18C U
 #define HIGHEST_I2C_ADDR 0x7A           //this is the address of the highest i2c HT16K33 +2
 										//
 
-boolean readkeys = false;
+bool readkeys = false;
 
 //  HT16K33 Constants
 //
@@ -107,7 +134,7 @@ boolean readkeys = false;
 
 //
 uint16_t displaybuffer[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR][8];
-boolean HT16K33Push[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR]; // Used to force a write to a particular HT16K33 chip
+bool HT16K33Push[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR]; // Used to force a write to a particular HT16K33 chip
 int16_t  kk[3];            // this is the integer array to contain a keycode and value pair
 int16_t  keystack[3][64];  // this is the FIFO stack of key presses, key values and devices
 uint8_t  keystackNext;     // this is the next keypress to be processed
@@ -115,7 +142,7 @@ uint8_t  keystackFree;     // this is the first free slot in the keystack
 uint8_t keys[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR][6];
 uint8_t lastkeys[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR][6];
 unsigned long switchLastIntTime[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR + 1];  // this is the time when the last interrupt was seen from the device
-void connectToWiFi(const char *, const char *);
+//void connectToWiFi(const char *, const char *);
 
 const uint8_t generalIndicators[3][24] = {  // these are the LED positions for various indicators
 	{15,15,15,             // Gear good x3 These remain on an HT16K33
@@ -175,10 +202,10 @@ String value;
 int i = 0;
 int j = 0;
 //
-boolean commandsReady = false;
+bool commandsReady = false;
 //
-boolean inverterState = true;
-boolean batteryState = true;
+bool inverterState = true;
+bool batteryState = true;
 //
 // New devices for the Hornet
 
@@ -255,7 +282,7 @@ void setup() {
 	UFCDisplay.clear();
 	oledUFCstatus.begin();                            // Initialise the status OLED on the UFC
 	oledUFCMsg(10, 7, "F/A-18C");
-	oledUFCstatus.drawStr(10, 15, "UFC V0.2");
+	oledUFCstatus.drawStr(10, 15, "UFC V0.3");
 	oledUFCstatus.sendBuffer();
 
 	testI2CScanner();
@@ -282,12 +309,38 @@ void setup() {
 
 
 	testAll();
-													  //Connect to the WiFi network
-	connectToWiFi(networkName, networkPswd);
+	//
+	// Get a connection, or configure the AP and then get a connection
+	//
+	iotWebConf.init();
+	iotWebConf.setApTimeoutMs(1000);  // for a device which is already configured, this will wait for 1s for the AP to be connected to
+	iotWebConf.addParameter(&ipAddressParam);
+	iotWebConf.addParameter(&gatewayParam);
+	iotWebConf.addParameter(&netmaskParam);
+	iotWebConf.setConfigSavedCallback(&iotWebConfConfigSaved);
+	iotWebConf.setFormValidator(&htmlFormValidator);
+	iotWebConf.setApConnectionHandler(&connectAp);
+	iotWebConf.setWifiConnectionHandler(&connectWifi);
 
-	while (!connected) {
+	// -- Set up required URL handlers on the web server.
+	server.on("/", handleRoot);
+	server.on("/config", [] { iotWebConf.handleConfig(); });
+	server.onNotFound([]() { iotWebConf.handleNotFound(); });
+
+
+	//Connect to the WiFi network
+	//connectToWiFi(networkName, networkPswd);
+
+	while (WiFi.status() != WL_CONNECTED) {
 		delay(1000);
+		iotWebConf.doLoop();
 	}
+	ip = WiFi.localIP();
+	Serial.println("WiFi connected");
+	Serial.print("IP address: ");
+	Serial.println(ip);
+	//WiFi.onEvent(WiFiEvent);
+	startUDPListener();
 
 	oledUFCMsg(0,31,"Connected");
 	sprintf(oledUFCstatusBuffer, "%d.%d.%d.%d:%d", ip[0], ip[1], ip[2], ip[3], udpPort);
@@ -322,7 +375,9 @@ void setup() {
 	}
 }
 void loop() {
-
+	if (!connected) {
+		iotWebConf.doLoop();
+	}
 	if (readSwitches(i2c_addr_ufc) | ProcessEncoders()) {
 		// one or more keys have been placed onto the keystack and need to be processed
 		while (keystackCount()>0) {
@@ -495,6 +550,10 @@ char * getCmdValStr(char * cmdBuffer) {
 	for (uint16_t ii = 0; ii<cmdLen; ii++) {
 		if (cmdBuffer[ii] == '=') {
 			memcpy(cmdValStrBuffer, &cmdBuffer[ii + 1], cmdLen - ii);  // move the command code into its own string
+			 if (cmdBuffer[ii + 1] == '_')
+			{
+				cmdBuffer[ii + 1] = '-';
+			}
 			cmdValStrBuffer[cmdLen - ii] = '\0';
 			return(cmdValStrBuffer);
 		}
@@ -520,24 +579,40 @@ void processCmd(char * cmdBuffer) {
 
 	case 2095:  // this is the Comm Channel 1 display
 	case 2096:  // this is the Comm Channel 2 display
-		if (value[0] == '\0' || value[0] == ' ') {
+		//Serial.println(value);
+		if (value[0] == '\0') {
 			cmdValue = 0;
 		}
-		else if (value[0] == 'G') {
+		else if (value[1] == 'G') {
 			cmdValue = 21;
 		}
-		else if (value[0] == 'M') {
+		else if (value[1] == 'M') {
 			cmdValue = 22;
 		}
-		else if (value[0] == 'C') {
+		else if (value[1] == 'C') {
 			cmdValue = 23;
 		}
-		else if(value[0] == 'S') {
+		else if(value[1] == 'S') {
 			cmdValue = 24;
 		}
 		else {
+			//Serial.print("|");Serial.print(value);Serial.println("|");
+			if (value[0] == '`')
+			{
+				cmdBuffer[5] = '1';
+			}
+			else if (value[0] == '~')
+			{
+				cmdBuffer[5] = '2';
+			}
+			else if (value[0] == ' ')
+			{
+				cmdBuffer[5] = cmdBuffer[6];
+				cmdBuffer[6] = '\0';
+			}
 			cmdValue = getCmdValint(cmdBuffer);
 		}
+		//Serial.print("cmdValue= ");	Serial.println(cmdValue, DEC);
 		drawCharacter(i2c_addr_ufc,cmdCode-2095, UFCchannelNumbers[cmdValue]);
 		displayHT16K33(i2c_addr_ufc);
 		break;
@@ -568,7 +643,15 @@ void processCmd(char * cmdBuffer) {
 	case 2093:  // String 2 Main UFC display
 		if (value[0] == '\0') {
 			value = "  ";
+		} 
+		else if (value[0] == '`') {
+			value[0] = '1';
+		} else if (value[0]== '~'){
+			value[0] = '2';
+		} else if (value[1] == '_') {
+			value = "--";
 		}
+
 		UFCDisplay.display(cmdCode-2092,value);
 		break;
 	case 2094:  // Number Main UFC display
@@ -588,7 +671,7 @@ void processOutput(char * replyBuffer) {
 	commandsReady = false;
 
 }
-boolean readSwitches(uint8_t i2c_address) {
+bool readSwitches(uint8_t i2c_address) {
 	// testing suggests that once the switches are read, it takes around 19ms before another interrupt
 	// will occur, even if the key is held down for the whole time.
 
@@ -781,7 +864,7 @@ boolean ProcessOnboardEncoders(void) {
 			encInt &= ~((uint8_t)1 << 0);
 			if (tUFCEncoderVal != UFCBrightnessVal) {
 				UFCBrightnessVal = tUFCEncoderVal;
-				Serial.print("Brightness value: "); Serial.println(tUFCEncoderVal, DEC);
+				//Serial.print("Brightness value: "); Serial.println(tUFCEncoderVal, DEC);
 				keystackPush(ENC_UFC_BRIGHTNESS, true);
 				EncoderValues[ENC_UFC_BRIGHTNESS - 850] = UFCBrightnessVal;
 				UFC_Backlight(i2c_addr_ufc, int(tUFCEncoderVal*15));
@@ -792,7 +875,7 @@ boolean ProcessOnboardEncoders(void) {
 			encInt &= ~((uint8_t)1 << 1);
 			if (tUFCEncoderVal != UFCVolume1Val) {
 				UFCVolume1Val = tUFCEncoderVal;
-				Serial.print("Volume1 value: "); Serial.println(tUFCEncoderVal, DEC);
+				//Serial.print("Volume1 value: "); Serial.println(tUFCEncoderVal, DEC);
 				keystackPush(ENC_UFC_VOLUME1, true);
 				EncoderValues[ENC_UFC_VOLUME1 - 850] = UFCVolume1Val;
 			}
@@ -802,7 +885,7 @@ boolean ProcessOnboardEncoders(void) {
 			encInt &= ~((uint8_t)1 << 2);
 			if (tUFCEncoderVal != UFCVolume2Val) {
 				UFCVolume2Val = tUFCEncoderVal;
-				Serial.print("Volume2 value: "); Serial.println(tUFCEncoderVal, DEC);
+				//Serial.print("Volume2 value: "); Serial.println(tUFCEncoderVal, DEC);
 				keystackPush(ENC_UFC_VOLUME2, true);
 				EncoderValues[ENC_UFC_VOLUME2 - 850] = UFCVolume2Val;
 			}
@@ -815,14 +898,14 @@ boolean ProcessOnboardEncoders(void) {
 				if (tUFCEncoderVal > UFCChannel1Val) {
 					// send 1 for increasing
 					EncoderValues[ENC_UFC_CHANNEL1 - 850] = 1;
-					Serial.println("Channel 1 value: Up");
+					//Serial.println("Channel 1 value: Up");
 				}
 				else {
 					// send 0 for decreasing
 					EncoderValues[ENC_UFC_CHANNEL1 - 850] = 0;
-					Serial.println("Channel 1 value: Dn");
+					//Serial.println("Channel 1 value: Dn");
 				}
-				Serial.print("Channel 1 value: "); Serial.println(tUFCEncoderVal,DEC);
+				//Serial.print("Channel 1 value: "); Serial.println(tUFCEncoderVal,DEC);
 				UFCChannel1.setValue(0.5);
 				UFCChannel1Val = 0.5;
 				keystackPush(ENC_UFC_CHANNEL1, true);
@@ -835,14 +918,14 @@ boolean ProcessOnboardEncoders(void) {
 				if (tUFCEncoderVal > UFCChannel2Val) {
 					// send 1 for increasing
 					EncoderValues[ENC_UFC_CHANNEL2 - 850] = 1;
-					Serial.println("Channel 2 value: Up");
+					//Serial.println("Channel 2 value: Up");
 				}
 				else {
 					// send 0 for decreasing
 					EncoderValues[ENC_UFC_CHANNEL2 - 850] = 0;
-					Serial.println("Channel 2 value: Dn");
+					//Serial.println("Channel 2 value: Dn");
 				}
-				Serial.print("Channel 2 value: "); Serial.println(tUFCEncoderVal, DEC);
+				//Serial.print("Channel 2 value: "); Serial.println(tUFCEncoderVal, DEC);
 				UFCChannel2.setValue(0.5);
 				UFCChannel2Val = 0.5;
 				keystackPush(ENC_UFC_CHANNEL2, true);
@@ -953,7 +1036,7 @@ void getSwitchData(uint8_t i2c_address) {
 	Wire.beginTransmission(i2c_address);
 	Wire.write(HT16K33_KEY_RAM_ADDR);
 	Wire.endTransmission();
-	Wire.requestFrom(i2c_address, (byte)6);  // try to read the six bytes containing the key presses
+	Wire.requestFrom(i2c_address, (byte)6);		// try to read the six bytes containing the key presses
 	i = 0;
 	while (Wire.available()) {                  // slave may send less than requested
 		keys[i2c_address - LOWEST_I2C_ADDR][i++] = Wire.read();  // receive a byte as character 
@@ -1160,53 +1243,138 @@ void getDefaultKeys(uint8_t i2c_address) {
 	Serial.println(" ");
 
 }
-void connectToWiFi(const char * ssid, const char * pwd) {
-	Serial.println("Connecting to WiFi network: " + String(ssid));
+/**
+ * Handle web requests to "/" path.
+ */
+void handleRoot()
+{
+	// -- Let IotWebConf test and handle captive portal requests.
+	if (iotWebConf.handleCaptivePortal())
+	{
+		// -- Captive portal request were already served.
+		return;
+	}
+	String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
+	s += "<title>BlueFinBima UFC Access Point</title></head><body>Welcome to the Access Point Configurator for the <b>BlueFinBima Up Front Controller</b>.";
+	s += "<br/><ul>";
+	s += "<li>IP address: ";
+	s += ipAddressValue;
+	s += "<li>Gateway addr: ";
+	s += gatewayValue;
+	s += "<li>Net Mask: ";
+	s += netmaskValue;
+	s += "</ul><br/>";
+	s += "Go to <a href='config'>configure page</a> to change settings.";
+	s += "</body></html>\n";
 
-	// delete old config
-	WiFi.disconnect(true);
+	server.send(200, "text/html", s);
+}
+
+boolean htmlFormValidator()
+{
+	Serial.println(F("Validating form."));
+	boolean valid = true;
+
+	if (!ipAddress.fromString(server.arg(ipAddressParam.getId())))
+	{
+		ipAddressParam.errorMessage = "Please provide a valid IP address.";
+		valid = false;
+	}
+	if (!netmask.fromString(server.arg(netmaskParam.getId())))
+	{
+		netmaskParam.errorMessage = "Please provide a valid netmask.";
+		valid = false;
+	}
+	if (!gateway.fromString(server.arg(gatewayParam.getId())))
+	{
+		gatewayParam.errorMessage = "Please provide a valid gateway address.";
+		valid = false;
+	}
+
+	return valid;
+}
+void iotWebConfConfigSaved()
+{
+	Serial.println(F("IotWebConf Configuration was updated."));
+}
+//void connectToWiFi(const char * ssid, const char * pwd) {
+//	// This is code to connect to a hard coded address.  Currently not used.
+//	Serial.println("Connecting to WiFi network: " + String(ssid));
+//
+//	// delete old config
+//	WiFi.disconnect(true);
+//	//register event handler
+//	WiFi.onEvent(WiFiEvent);
+//
+//	//Initiate connection
+//	WiFi.config(IPAddress(10, 1, 1, 17), IPAddress(10, 1, 1, 1), IPAddress(255, 255, 255, 0));
+//	WiFi.begin(ssid, pwd);
+//	Serial.println("Waiting for WIFI connection...");
+//	oledUFCMsg(0,32,"Awaiting WiFi");
+//}
+
+void connectWifi(const char* ssid, const char* password)
+{
+	ipAddress.fromString(String(ipAddressValue));
+	netmask.fromString(String(netmaskValue));
+	gateway.fromString(String(gatewayValue));
+
 	//register event handler
 	WiFi.onEvent(WiFiEvent);
 
-	//Initiate connection
-	WiFi.config(IPAddress(10, 1, 1, 17), IPAddress(10, 1, 1, 1), IPAddress(255, 255, 255, 0));
-	WiFi.begin(ssid, pwd);
-	Serial.println("Waiting for WIFI connection...");
-	oledUFCMsg(0,32,"Awaiting WiFi");
+	if (!WiFi.config(ipAddress, gateway, netmask)) {
+		Serial.println("STA Failed to configure");
+	}
+	Serial.print("ip: ");
+	Serial.println(ipAddress);
+	Serial.print("gw: ");
+	Serial.println(gateway);
+	Serial.print("net: ");
+	Serial.println(netmask);
+	WiFi.begin(ssid, password);
+}
+boolean connectAp(const char* apName, const char* password)
+{
+	// -- Custom AP settings
+	return WiFi.softAP(apName, password, 4);
 }
 //wifi event handler
 void WiFiEvent(WiFiEvent_t event) {
+
 	switch (event) {
 
 	case SYSTEM_EVENT_STA_GOT_IP:
-		//When connected set 
+		//When connected set
+		connected = true;
 		Serial.print("WiFi connected! IP address: "); Serial.println(WiFi.localIP());
 		ip = WiFi.localIP();
-		if (udp.listen(udpPort)) {
-			Serial.print("Listening on port: ");
-			Serial.println(udpPort, DEC);
-			connected = true;
-			udp.onPacket([](AsyncUDPPacket packet) {
-				if (packetLen == 0) {
-					// if packetLen > 0 then there is data which has not been processed yet
-					memcpy(packetBuffer, packet.data(), packet.length());
-					packetLen = packet.length();
-					portRemote = packet.remotePort();
-					ipRemote = packet.remoteIP();
-				}
-				else {
-					//  buffer is locked so we been to wait until the buffer is freed up
-				}
-			});
-		}
+		startUDPListener();
 		break;
-
 
 	case SYSTEM_EVENT_STA_DISCONNECTED:
 
 		Serial.println("WiFi lost connection");
 		connected = false;
 		break;
+	}
+}
+void startUDPListener(void) {
+	if (udp.listen(udpPort)) {
+		Serial.print("Listening on port: ");
+		Serial.println(udpPort, DEC);
+		connected = true;
+		udp.onPacket([](AsyncUDPPacket packet) {
+			if (packetLen == 0) {
+				// if packetLen > 0 then there is data which has not been processed yet
+				memcpy(packetBuffer, packet.data(), packet.length());
+				packetLen = packet.length();
+				portRemote = packet.remotePort();
+				ipRemote = packet.remoteIP();
+			}
+			else {
+				//  buffer is locked so we been to wait until the buffer is freed up
+			}
+		});
 	}
 }
 void testI2CScanner() {
@@ -1349,15 +1517,15 @@ void DLG2416_Brightness(uint8_t channel, uint32_t value) {
 }
 void displayIP(void) {
 	char msg[32];
-	sprintf(msg, "Port%5d   IP  %3d.%3d.%3d.%3d", udpPort, ip[0], ip[1], ip[2], ip[3]);
+	sprintf(msg, "Port %5d IP  %3d.%3d.%3d.%3d", udpPort, ip[0], ip[1], ip[2], ip[3]);
 	UFCDisplay.display(0, &msg[0]);
 	UFCDisplay.display(1, &msg[2]);
 	UFCDisplay.display(&msg[4]);
-	UFCDisplay.oduDisplay(1, &msg[12]);
-	UFCDisplay.oduDisplay(2, &msg[16]);
-	UFCDisplay.oduDisplay(3, &msg[20]);
-	UFCDisplay.oduDisplay(4, &msg[24]);
-	UFCDisplay.oduDisplay(5, &msg[28]);
+	UFCDisplay.oduDisplay(1, &msg[11]);
+	UFCDisplay.oduDisplay(2, &msg[15]);
+	UFCDisplay.oduDisplay(3, &msg[19]);
+	UFCDisplay.oduDisplay(4, &msg[23]);
+	UFCDisplay.oduDisplay(5, &msg[27]);
 	delay(2000);
 	UFCDisplay.clear();
 }

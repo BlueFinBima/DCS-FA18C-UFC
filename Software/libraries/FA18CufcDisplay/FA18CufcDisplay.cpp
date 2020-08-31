@@ -65,25 +65,32 @@ void FA18CufcDisplay::blank(void)
 }
 void FA18CufcDisplay::display(char *text)
 {
-	// write 8 characters to the main display
+	// write 7 characters to the main display which is complicated
+	// by the fact that we use the rightmost 3 chars in display 6
 	uint8_t j = 0;
-	for (uint8_t i = 6; i > 4; i--) {
-		DLG2416Display(i, &text[j]);
-		j += 4;
+	for (j = 0; j<3; j++) {
+		// first three chars are written individually
+		DLG2416Display(6, j+1,&text[j]);
 	}
+	DLG2416Display(5, &text[j]); // write the complete display 5
 }
 void FA18CufcDisplay::display(uint8_t strNumber,char *text)
 {
 	// This format is used for the dual character strings at the beginning of the main display.
-	// 
+	// This is complicated by them spanning display 7 and the first charater of display 6.
 	if (text[1] == '-' && text[0] != 'A') {
-		// if the first character is a dash, do a send one to mimic display
-		DLG2416Display(7, strNumber * 2, &text[1]);
+		// if the first character is a dash, do a second one to mimic display
+		DLG2416Display(7, strNumber * 2 + 1, &text[1]);
 	}
 	else {
-		DLG2416Display(7, strNumber * 2, &text[0]);
+		DLG2416Display(7, strNumber * 2 + 1, &text[0]);
 	}
-	DLG2416Display(7, strNumber*2+1, &text[1]);
+	if (strNumber == 0) {
+		DLG2416Display(7, strNumber * 2 + 2, &text[1]);
+	}
+	else {
+		DLG2416Display(6, 0, &text[1]);
+	}
 }
 void FA18CufcDisplay::oduDisplay(uint8_t ODUNumber,char *text)
 {
