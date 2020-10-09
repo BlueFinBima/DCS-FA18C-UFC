@@ -375,9 +375,9 @@ void setup() {
 	}
 }
 void loop() {
-	if (!connected) {
-		iotWebConf.doLoop();
-	}
+	//if (!connected) {
+	//	iotWebConf.doLoop();
+	//}
 	if (readSwitches(i2c_addr_ufc) | ProcessEncoders()) {
 		// one or more keys have been placed onto the keystack and need to be processed
 		while (keystackCount()>0) {
@@ -657,6 +657,11 @@ void processCmd(char * cmdBuffer) {
 	case 2094:  // Number Main UFC display
 		if (value[0] == '\0') {
 			value = "        ";
+		} else if (value[0] == '@') {
+			value[0] = 'o';
+		}
+		else if (value[1] == '@') {
+			value[1] = 'o';
 		}
 		UFCDisplay.display(value);
 		break;
