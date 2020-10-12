@@ -1,7 +1,6 @@
 # do not allow my personal WiFi Info to go into the repo
 *.opendb
 *.log
-Software/DCS Hornet ESP32/WiFiInfo.h
 *.db
 *.[do]
 *.elf
