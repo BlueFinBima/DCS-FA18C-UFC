@@ -3,6 +3,12 @@
 *
 *  requires fixed ESP32 I2C files from https://github.com/stickbreaker/arduino-esp32/releases 
 *
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+*
+*  On first running, a wireless hotspot (SSID "BlueFinBima UFC" PW "bluefinbima") and you connect to the
+*  WiFi configuration menu by pointing your browser to http://192.168.4.1/config if connecting to the hotspot
+*  does not take you to the config screen automatically.
+* 
 */
 
 
@@ -11,13 +17,13 @@
 //#include <FA18CkeyMappings.h>
 //#include <FA18CufcDisplay.h>        // F/A-18C UFC Display function
 #include <arduino.h>
-#include <U8g2lib.h>                  // Graphics for the OLED graphic display 
-#include <WiFi.h>						// ESP32 wireless code
+#include <U8g2lib.h>                  // Graphics for the OLED graphic display https://www.arduino.cc/reference/en/libraries/u8g2/
+#include <WiFi.h>					  // ESP32 wireless code
 #include <AsyncUDP.h>				  // Use async UDP library on ESP32
 #include "driver/gpio.h"    
 #include <Wire.h>                     // This is needed for i2c communications
 #include <OLED_I2C.h>                 // Library for the OLED display without serial board 4-bit
-#include "RotaryEncoderAdvanced.h"    // enjoyneering Rotary Encoder functions
+#include "RotaryEncoderAdvanced.h"    // enjoyneering Rotary Encoder functions https://github.com/enjoyneering/RotaryEncoder
 #include "RotaryEncoderAdvanced.cpp"  //for some reason linker can't find the *.cpp :(
 #include "WiFiInfo.h"               // Personal Wifi information
 #include <DNSServer.h>				// https://github.com/prampec/IotWebConf
@@ -239,6 +245,12 @@ volatile byte encInt = 0;  // set in the ISR with a bit for a change to each of 
 #define D8 4  
 #define D9 23  
 #define D10 0
+
+void IRAM_ATTR UFCBrightnessISR();
+void IRAM_ATTR UFCVolume1ISR();
+void IRAM_ATTR UFCVolume2ISR();
+void IRAM_ATTR UFCChannel1ISR();
+void IRAM_ATTR UFCChannel2ISR();
 
 RotaryEncoderAdvanced <float> UFCChannel1(25, 15, 0xff, 0.05, 0, 1);
 RotaryEncoderAdvanced <float> UFCChannel2(27, 26, 0xff, 0.05, 0, 1);
