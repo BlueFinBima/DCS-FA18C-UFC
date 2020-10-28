@@ -10,7 +10,7 @@
 *  does not take you to the config screen automatically.
 * 
 */
-
+#define PUKKA                         //  Used to denote original code to match the schematic which has been subsequently changed 
 
 #include "FA18CkeyMappings.h"
 #include "FA18CufcDisplay.h"
@@ -252,12 +252,20 @@ void IRAM_ATTR UFCVolume2ISR();
 void IRAM_ATTR UFCChannel1ISR();
 void IRAM_ATTR UFCChannel2ISR();
 
+#ifdef PUKKA
+RotaryEncoderAdvanced <float> UFCChannel1(12, 13, 0xff, 0.05, 0, 1);
+RotaryEncoderAdvanced <float> UFCChannel2(27, 26, 0xff, 0.05, 0, 1);
+RotaryEncoderAdvanced <float> UFCBrightness(17, 16, 0xff, 0.1, 0, 1);
+RotaryEncoderAdvanced <float> UFCVolume1(5, 4, 0xff, 0.1, 0, 1);
+RotaryEncoderAdvanced <float> UFCVolume2(19, 18, 0xff, 0.1, 0, 1);
+#else
+// Change of wiring on 001
 RotaryEncoderAdvanced <float> UFCChannel1(25, 15, 0xff, 0.05, 0, 1);
 RotaryEncoderAdvanced <float> UFCChannel2(27, 26, 0xff, 0.05, 0, 1);
 RotaryEncoderAdvanced <float> UFCBrightness(17, 16, 0xff, 0.1, 0, 1);
 RotaryEncoderAdvanced <float> UFCVolume1(5, 4, 0xff, 0.1, 0, 1);
 RotaryEncoderAdvanced <float> UFCVolume2(19, 18, 0xff, 0.1, 0, 1);
-
+#endif // PUKKA
 float UFCBrightnessVal;
 float UFCVolume1Val;
 float UFCVolume2Val;
@@ -372,12 +380,23 @@ void setup() {
 	UFCChannel1.setValue(0.5);
 	UFCChannel2.begin();
 	UFCChannel2.setValue(0.5);
-    //Create ISR for Encoders
+
+#ifdef PUKKA
+	//Create ISR for Encoders
+	attachInterrupt(digitalPinToInterrupt(17), UFCBrightnessISR, CHANGE);  //call UFCBrightnessISR()    when high->low or high->low changes happened
+	attachInterrupt(digitalPinToInterrupt(5), UFCVolume1ISR, CHANGE);  //call  UFCVolume1ISR()    when high->low or high->low changes happened
+	attachInterrupt(digitalPinToInterrupt(19), UFCVolume2ISR, CHANGE);  //call  UFCVolume2ISR()    when high->low or high->low changes happened
+	attachInterrupt(digitalPinToInterrupt(12), UFCChannel1ISR, CHANGE);  //call  UFCChannel1ISR()    when high->low or high->low changes happened
+	attachInterrupt(digitalPinToInterrupt(27), UFCChannel2ISR, CHANGE);  //call  UFCChannel2ISR()    when high->low or high->low changes happened
+
+#else
+	//Create ISR for Encoders
 	attachInterrupt(digitalPinToInterrupt(17), UFCBrightnessISR, CHANGE);  //call UFCBrightnessISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(5), UFCVolume1ISR, CHANGE);  //call  UFCVolume1ISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(19), UFCVolume2ISR, CHANGE);  //call  UFCVolume2ISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(25), UFCChannel1ISR, CHANGE);  //call  UFCChannel1ISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(27), UFCChannel2ISR, CHANGE);  //call  UFCChannel2ISR()    when high->low or high->low changes happened
+#endif
 
 	UFC_Backlight(i2c_addr_ufc, 16);
 	// Dim the UFC backlights

@@ -89,7 +89,7 @@
 "TP4;""PTR1TP13SQ"";""PTR1TP13SQ"";""TP13SQ"";""TEST PIN"";"""";"""";"""";"""";"""";"""";"""";"""";",
 "U$4;""ENC_RGB_L"";""ENCODER_RGB_SWITCHTHROUGHHOLE"";""ENCODER_RGB"";""RGB Switched Rotary Encoder With Switch EC12PRGBSDVBF-D-25K-24-24C-6108-6H"";"""";"""";"""";"""";"""";"""";"""";"""";",
 "U$5;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
-"U$7;""PCF8575CTSSOP24"";""PCF8575CTSSOP24"";""TSSOP24"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
+"U$7;""PCF8575PTSSOP24"";""PCF8575PTSSOP24"";""TSSOP24"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
 "U$11;""ENC_RGB_R"";""ENCODER_RGB_SWITCHTHROUGHHOLE"";""ENCODER_RGB"";""RGB Switched Rotary Encoder With Switch EC12PRGBSDVBF-D-25K-24-24C-6108-6H"";"""";"""";"""";"""";"""";"""";"""";"""";",
 "U$21;""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ALPS_ENCODER+PUSHSWITCHLARGE_TABS"";""ENCODER+SWITCH_LARGER_TABS"";"""";"""";"""";"""";"""";"""";"""";"""";"""";",
 "U$31;""Addr 0x71"";""HOLTEK_HT16K33"";""SOIC28"";""Holtek HT16K33RAM Mapping 16*8 LED Controller Driver with keyscanOrigianlly tested with the AdaFruit breakout board"," the chip is described here."";"""";"""";"""";"""";"""";"""";"""";"""";"

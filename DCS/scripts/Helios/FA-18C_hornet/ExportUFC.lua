@@ -9,9 +9,9 @@ PrevExport.LuaExportActivityNextEvent = LuaExportActivityNextEvent
 
 local scriptDebug = 0
 
-local lIpAddress = nil
-local lHost = "ufc.home"
-local lPort = 9089
+local lIpAddress = nil           -- ip address of UFC if no DNS
+local lHost = "HornetUFC.local"  -- hostname of the UFC if you have DNS resolution
+local lPort = 9089 
 local lInterval = 0.067
 local lLowTickInterval = 1
 local lConn
