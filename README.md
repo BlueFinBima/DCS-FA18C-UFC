@@ -6,8 +6,11 @@
 The HT16K33 isn't too difficult to find, and can be picked up quite cheaply on AliExpress if you are prepared to wait.  The DLG2416 displays are quite expensive from 
 typical vendors, however hunting around on ebay etc might result in more affordable sources.  They have a fixed character set which is unfortunate, however they remain useable and pleasing alternative to the 16 segment displays which the actual UFC requires.  If didn't manage to find suitable 16 segment displays of a physical size to work with this 
 project.  The comms channel indicators are 16 segment displays (be careful not to buy 14 segment) but unfortunately I was unable to find displays which were not slanted - for me a minor issue.
-The ESP32 boards come in all sorts of shapes and sizes, and my controller board needs
+* The ESP32 boards come in all sorts of shapes and sizes, and my controller board needs
 a particular type of 38-pin board and I found to my cost that there were several boards with different widths.  I would expect [these boards](https://www.amazon.co.uk/AZDelivery-NodeMcu-CP2102-Development-including/dp/B074RGW2VQ/) to be the correct size.
+* The green 16 segment LED displays now (2020) seem to be very hard to acquire.
+* R2 and R5 on the controller board should only be installed as a last resort of the I2C is not stable without them
+
 
 ### The Story
 I would love to have a full Simpit for every aircraft – who
