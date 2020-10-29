@@ -98,9 +98,9 @@ unsigned long time2 = 0;                // Used to calculate loop delay
 											 //  This section is the master list of all of the 12c devices in use in the project
 											 //
 const uint8_t i2c_addr_other = 0x78;     // dummy i2c address for the simulated HT16K33 used for oddly connected switches
-const uint8_t i2c_addr_cp = 0x77;     // i2c address of the HT16K33 used for the Caution Panel (this board only has indicators)
-const uint8_t i2c_addr_top = 0x76;     // i2c address of the HT16K33 used for the gear and the top line of indicators  *** this board no longer exists ***
-const uint8_t i2c_addr_ufc = 0x71;     // i2c address of the HT16K33 used for the F/A-18C up front controller keys, illuminations, Cues & Comm Channel Displays (This has no indicators)
+const uint8_t i2c_addr_cp = 0x77;        // i2c address of the HT16K33 used for the Caution Panel (this board only has indicators)
+const uint8_t i2c_addr_top = 0x76;       // i2c address of the HT16K33 used for the gear and the top line of indicators  *** this board no longer exists ***
+const uint8_t i2c_addr_ufc = 0x71;       // i2c address of the HT16K33 used for the F/A-18C up front controller keys, illuminations, Cues & Comm Channel Displays (This has no indicators)
 const uint8_t i2c_addr_elec = 0x75;     // i2c address of the HT16K33 used for the CMSP and Electrical panel
 const uint8_t i2c_addr_lhs = 0x73;     // i2c address of the HT16K33 used for the LHS switches (This is a general switch board)
 const uint8_t i2c_addr_rhs = 0x72;     // i2c address of the HT16K33 used for the RHS switches (This is a general switch board)
@@ -292,11 +292,11 @@ void setup() {
 	Serial.begin(115200);  // Initilize hardware serial:
 	Serial.println("\n");
 	//Wire.begin(D2, D1, 25000U);       //  sda = gpio21/D2   scl=gpio22/D1
-	Wire.begin(D2, D1);       //  sda = gpio21/D2   scl=gpio22/D1
-	Wire.endTransmission();   // try to send a stop bit to see if this can wake up a sleeping 12c bus
+	Wire.begin(D2, D1);                 //  sda = gpio21/D2   scl=gpio22/D1
+	Wire.endTransmission();             // try to send a stop bit to see if this can wake up a sleeping 12c bus
 	//Wire.setClock(50000);
 	for (uint8_t i = 0; i<HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR; i++) HT16K33Push[i] = false;   // This flag is used to indicate that the LED buffer needs to be written to the HT16K33
-	for (uint8_t i = LOWEST_I2C_ADDR; i< HIGHEST_I2C_ADDR; i++) initHT16K33(i);            // set up the HT16K33 i2c chips
+	for (uint8_t i = LOWEST_I2C_ADDR; i< HIGHEST_I2C_ADDR; i++) initHT16K33(i);              // set up the HT16K33 i2c chips
 
 																						   //initialise the key buffers 
 	UFCDisplay.clear();
