@@ -10,6 +10,8 @@ project.  The comms channel indicators are 16 segment displays (be careful not t
 a particular type of 38-pin board and I found to my cost that there were several boards with different widths.  I would expect [these boards](https://www.amazon.co.uk/AZDelivery-NodeMcu-CP2102-Development-including/dp/B074RGW2VQ/) to be the correct size.
 * The green 16 segment LED displays now (2020) seem to be very hard to acquire.
 * R2 and R5 on the controller board should only be installed as a last resort of the I2C is not stable without them
+* The PCF8575 is a PCF8575PWR (TSSOP)
+* D1 and D2 are BAT54CDW and not BAT54TW
 
 
 ### The Story
