@@ -1,6 +1,6 @@
 /*
-  FA18CufcDisplay.h - I2C ATtiny85 used for Master Caution LED on the UFC of A-10C
-  Revision 1.1
+  FA18CufcDisplay.h - Functions used for F/A-18C Up Front Controller
+
   Copyright (c) 2015 Neil Larmour.  All right reserved.
 
   This library is free software; you can redistribute it and/or

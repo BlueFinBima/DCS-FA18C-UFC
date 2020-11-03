@@ -1,3 +1,7 @@
 #pragma once
-#define SSID "Your_SSID";
-#define WIFIPW "Your_WiFi_Password";
+#ifndef WIFISSID
+#define WIFISSID "Your_SSID"
+#endif
+#ifndef WIFIPW
+#define WIFIPW "Your_WiFi_Password"
+#endif

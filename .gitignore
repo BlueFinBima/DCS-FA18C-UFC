@@ -6,3 +6,4 @@
 *.elf
 *.bin
 *.ipch
+/Software/DCS Hornet ESP32/Personal.h

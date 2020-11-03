@@ -10,10 +10,9 @@
 *  does not take you to the config screen automatically.
 * 
 */
-#define PUKKA                         //  Used to denote original code to match the schematic which has been subsequently changed 
 
 #include "FA18CkeyMappings.h"
-#include "FA18CufcDisplay.h"
+#include "FA18CufcDisplay.h"		  // F/A-18C UFC Display function
 //#include <FA18CkeyMappings.h>
 //#include <FA18CufcDisplay.h>        // F/A-18C UFC Display function
 #include <arduino.h>
@@ -25,7 +24,12 @@
 #include <OLED_I2C.h>                 // Library for the OLED display without serial board 4-bit
 #include "RotaryEncoderAdvanced.h"    // enjoyneering Rotary Encoder functions https://github.com/enjoyneering/RotaryEncoder
 #include "RotaryEncoderAdvanced.cpp"  //for some reason linker can't find the *.cpp :(
-#include "WiFiInfo.h"               // Personal Wifi information
+#if __has_include("WiFiInfo.h")
+#include "WiFiInfo.h"                 // Personal Wifi information
+#endif
+#if __has_include("Personal.h")
+#include "Personal.h"                //  Used to denote personal variations from the official schematics in the project
+#endif
 #include <DNSServer.h>				// https://github.com/prampec/IotWebConf
 #include <WebServer.h>				// https://github.com/prampec/IotWebConf
 #include <IotWebConf.h>				// https://github.com/prampec/IotWebConf
@@ -55,8 +59,8 @@ IotWebConfParameter netmaskParam = IotWebConfParameter("Subnet mask", "netmask",
 
 
 // WiFi network name and password:
-#ifdef SSID
-const char * networkName = SSID;
+#ifdef WIFISSID
+const char * networkName = WIFISSID;
 const char * networkPswd = WIFIPW;
 #elif
 const char * networkName = "YourSSID";
@@ -252,7 +256,7 @@ void IRAM_ATTR UFCVolume2ISR();
 void IRAM_ATTR UFCChannel1ISR();
 void IRAM_ATTR UFCChannel2ISR();
 
-#ifdef PUKKA
+#ifndef PERSONAL
 RotaryEncoderAdvanced <float> UFCChannel1(12, 13, 0xff, 0.05, 0, 1);
 RotaryEncoderAdvanced <float> UFCChannel2(27, 26, 0xff, 0.05, 0, 1);
 RotaryEncoderAdvanced <float> UFCBrightness(17, 16, 0xff, 0.1, 0, 1);
@@ -265,7 +269,7 @@ RotaryEncoderAdvanced <float> UFCChannel2(27, 26, 0xff, 0.05, 0, 1);
 RotaryEncoderAdvanced <float> UFCBrightness(17, 16, 0xff, 0.1, 0, 1);
 RotaryEncoderAdvanced <float> UFCVolume1(5, 4, 0xff, 0.1, 0, 1);
 RotaryEncoderAdvanced <float> UFCVolume2(19, 18, 0xff, 0.1, 0, 1);
-#endif // PUKKA
+#endif // PERSONAL
 float UFCBrightnessVal;
 float UFCVolume1Val;
 float UFCVolume2Val;
@@ -297,8 +301,7 @@ void setup() {
 	//Wire.setClock(50000);
 	for (uint8_t i = 0; i<HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR; i++) HT16K33Push[i] = false;   // This flag is used to indicate that the LED buffer needs to be written to the HT16K33
 	for (uint8_t i = LOWEST_I2C_ADDR; i< HIGHEST_I2C_ADDR; i++) initHT16K33(i);              // set up the HT16K33 i2c chips
-
-																						   //initialise the key buffers 
+																						   //initialise the key buffers  
 	UFCDisplay.clear();
 	oledUFCstatus.begin();                            // Initialise the status OLED on the UFC
 	oledUFCMsg(10, 7, "F/A-18C");
@@ -317,23 +320,33 @@ void setup() {
 	muxSelect(8); // Turn off all external channels
 
 	/* Debug
-	for(uint8_t ii = LOWEST_I2C_ADDR;ii<HIGHEST _I2C_ADDR+1;ii++){  //this obtains a print of all the key ram
+	for(uint8_t ii = LOWEST_I2C_ADDR;ii<HIGHEST_I2C_ADDR+1;ii++){  //this obtains a print of all the key ram
 	getDefaultKeys(ii);
 	}
 	*/
-
+	//  Read the switch data to see if user is attempting to force a network reconfiguration
+	//  We check if I/P or ODU1 buttons are depressed to indicate reconfiguration is needed.
+	getSwitchData(i2c_addr_ufc);
+	bool reconfig = false;
+	int accessPointTimeOut = 1000;
+	if (keys[i2c_addr_ufc - LOWEST_I2C_ADDR][2] == 0x01 || keys[i2c_addr_ufc - LOWEST_I2C_ADDR][3] == 0x01) {
+		reconfig = true;
+		accessPointTimeOut = 120000;  // Set access point timeout to 2 mins.
+		Serial.println("Reconfiguration has been requested");
+	}
 	// Setup timer and attach timer to a GPIO pin to allow PWM for the DLG2416 displays
 	ledcSetup(DLG2416_CHANNEL_0, DLG2416_BASE_FREQ, DLG2416_TIMER_13_BIT);
 	ledcAttachPin(DLG2416_BLANK_PIN, DLG2416_CHANNEL_0);
 	DLG2416_Brightness(DLG2416_CHANNEL_0, 255);
 
-
 	testAll();
 	//
 	// Get a connection, or configure the AP and then get a connection
 	//
+	if(reconfig) configUFCMessage();
+
 	iotWebConf.init();
-	iotWebConf.setApTimeoutMs(1000);  // for a device which is already configured, this will wait for 1s for the AP to be connected to
+	iotWebConf.setApTimeoutMs(accessPointTimeOut);  // for a device which is already configured, this will wait for 1s for the AP to be connected to
 	iotWebConf.addParameter(&ipAddressParam);
 	iotWebConf.addParameter(&gatewayParam);
 	iotWebConf.addParameter(&netmaskParam);
@@ -381,14 +394,13 @@ void setup() {
 	UFCChannel2.begin();
 	UFCChannel2.setValue(0.5);
 
-#ifdef PUKKA
+#ifndef PERSONAL
 	//Create ISR for Encoders
 	attachInterrupt(digitalPinToInterrupt(17), UFCBrightnessISR, CHANGE);  //call UFCBrightnessISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(5), UFCVolume1ISR, CHANGE);  //call  UFCVolume1ISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(19), UFCVolume2ISR, CHANGE);  //call  UFCVolume2ISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(12), UFCChannel1ISR, CHANGE);  //call  UFCChannel1ISR()    when high->low or high->low changes happened
 	attachInterrupt(digitalPinToInterrupt(27), UFCChannel2ISR, CHANGE);  //call  UFCChannel2ISR()    when high->low or high->low changes happened
-
 #else
 	//Create ISR for Encoders
 	attachInterrupt(digitalPinToInterrupt(17), UFCBrightnessISR, CHANGE);  //call UFCBrightnessISR()    when high->low or high->low changes happened
@@ -1519,18 +1531,18 @@ void testUFC(uint8_t i2c_addr) {
 	drawPixel(i2c_addr, 10, 2, LED_ON);  // LED on the 0 key
 
 	//for (uint8_t j = 0; j<1; j++) {
-		uint8_t k = 24;
-		for (uint8_t i = 0; i<25; i++) {
-			drawCharacter(i2c_addr, j, UFCchannelNumbers[i]);
-			drawCharacter(i2c_addr, j + 1, UFCchannelNumbers[k--]);
-			displayHT16K33(i2c_addr);
-			delay(75);
-		}
-		for (uint8_t i = 0; i<5; i++) {
-			drawPixel(i2c_addr, UFCcueing[i], 4, LED_ON);
-			displayHT16K33(i2c_addr);
-			delay(50);
-		}
+	uint8_t k = 24;
+	for (uint8_t i = 0; i < 25; i++) {
+		drawCharacter(i2c_addr, j, UFCchannelNumbers[i]);
+		drawCharacter(i2c_addr, j + 1, UFCchannelNumbers[k--]);
+		displayHT16K33(i2c_addr);
+		delay(75);
+	}
+	for (uint8_t i = 0; i < 5; i++) {
+		drawPixel(i2c_addr, UFCcueing[i], 4, LED_ON);
+		displayHT16K33(i2c_addr);
+		delay(50);
+	}
 	//}
 
 	delay(500);
@@ -1539,6 +1551,20 @@ void testUFC(uint8_t i2c_addr) {
 	}
 	UFCDisplay.clear();
 	displayHT16K33(i2c_addr);
+}
+void configUFCMessage(void) {
+	UFCDisplay.clear();
+	//write data
+	//char msg[] = "F/A-18C Hor net BlueFin Bima2018";
+	char msg[] = "AccessPoint   ON 192.168  .4  .1";
+	UFCDisplay.display(0, &msg[0]);
+	UFCDisplay.display(1, &msg[2]);
+	UFCDisplay.display(&msg[4]);
+	UFCDisplay.oduDisplay(1, &msg[12]);
+	UFCDisplay.oduDisplay(2, &msg[16]);
+	UFCDisplay.oduDisplay(3, &msg[20]);
+	UFCDisplay.oduDisplay(4, &msg[24]);
+	UFCDisplay.oduDisplay(5, &msg[28]);
 }
 
 void DLG2416_Brightness(uint8_t channel, uint32_t value) {

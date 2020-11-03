@@ -30,6 +30,9 @@
     <ClInclude Include="__vm\.DCS Hornet ESP32.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WiFiInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DCS Hornet ESP32.ino" />
