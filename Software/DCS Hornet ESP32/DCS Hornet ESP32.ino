@@ -33,6 +33,14 @@
 #include <DNSServer.h>				// https://github.com/prampec/IotWebConf
 #include <WebServer.h>				// https://github.com/prampec/IotWebConf
 #include <IotWebConf.h>				// https://github.com/prampec/IotWebConf
+#include <time.h>	
+
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 0;
+const int   daylightOffset_sec = 3600;
+struct tm timeinfo;
+bool ufc_Idle = true;
+long lastUFCActivityTime = 0;
 
 #define CONFIG_VERSION "UFC001"
 const char apName[] = "BlueFinBima UFC";
@@ -324,6 +332,7 @@ void setup() {
 	getDefaultKeys(ii);
 	}
 	*/
+
 	//  Read the switch data to see if user is attempting to force a network reconfiguration
 	//  We check if I/P or ODU1 buttons are depressed to indicate reconfiguration is needed.
 	getSwitchData(i2c_addr_ufc);
@@ -372,6 +381,9 @@ void setup() {
 	Serial.println("WiFi connected");
 	Serial.print("IP address: ");
 	Serial.println(ip);
+
+	configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);  // get time info before starting the UDP Listener
+
 	//WiFi.onEvent(WiFiEvent);
 	startUDPListener();
 
@@ -421,6 +433,10 @@ void loop() {
 	//if (!connected) {
 	//	iotWebConf.doLoop();
 	//}
+	if (millis() - lastUFCActivityTime > 1800000 | lastUFCActivityTime == 0) {
+		ufc_Idle = true;
+		idleFunctions();
+	}
 	if (readSwitches(i2c_addr_ufc) | ProcessEncoders()) {
 		// one or more keys have been placed onto the keystack and need to be processed
 		while (keystackCount()>0) {
@@ -510,10 +526,22 @@ void udpCheck(void) {
 	// so we need different processing
 	//
 	if (packetLen > 0) {
+		if (ufc_Idle) {
+			UFCDisplay.clear();
+			displayClear(i2c_addr_ufc);
+		}
+		ufc_Idle = false;
+		lastUFCActivityTime = millis();
 		parseCmdPacket(packetBuffer, packetLen);
 		packetLen = 0;  // free up the buffer for more data
 	}
 	if (commandsReady) {
+		if (ufc_Idle) {
+			UFCDisplay.clear();
+			displayClear(i2c_addr_ufc);
+		}
+		ufc_Idle = false;
+		lastUFCActivityTime = millis();
 		processOutput(replyBuffer);
 	}
 
@@ -1555,7 +1583,6 @@ void testUFC(uint8_t i2c_addr) {
 void configUFCMessage(void) {
 	UFCDisplay.clear();
 	//write data
-	//char msg[] = "F/A-18C Hor net BlueFin Bima2018";
 	char msg[] = "AccessPoint   ON 192.168  .4  .1";
 	UFCDisplay.display(0, &msg[0]);
 	UFCDisplay.display(1, &msg[2]);
@@ -1590,4 +1617,27 @@ void displayIP(void) {
 	UFCDisplay.oduDisplay(5, &msg[27]);
 	delay(2000);
 	UFCDisplay.clear();
+}
+void idleFunctions(void) {
+	struct tm timeInfoNow;
+	if (getLocalTime(&timeInfoNow)) {
+		if (timeInfoNow.tm_sec != timeinfo.tm_sec) {
+			char msg[32];
+			sprintf(msg, "%02d:%02d.%02d", timeInfoNow.tm_hour, timeInfoNow.tm_min, timeInfoNow.tm_sec);
+			UFCDisplay.display(1, msg);
+			UFCDisplay.display(&msg[2]);
+			UFCDisplay.oduDisplay(1, "LIMA");
+			UFCDisplay.oduDisplay(2, "ZULU");
+			drawPixel(i2c_addr_ufc, UFCcueing[0], 4, LED_ON);
+			drawPixel(i2c_addr_ufc, UFCcueing[1], 4, LED_OFF);
+			displayHT16K33(i2c_addr_ufc);
+			memcpy(&timeinfo, &timeInfoNow, sizeof(struct tm));
+		}
+	}
+	if (!ufc_Idle) {
+		UFCDisplay.clear();
+		drawPixel(i2c_addr_ufc, UFCcueing[0], 4, LED_OFF);
+		drawPixel(i2c_addr_ufc, UFCcueing[1], 4, LED_OFF);
+		displayHT16K33(i2c_addr_ufc);
+	}
 }
