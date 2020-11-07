@@ -1,9 +1,26 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1145
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DCS Instrument Controller ESP32", ".\DCS Hornet ESP32.vcxproj", "{18CD8965-86B1-4EBC-844A-8E1A83DB9E0A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DCS Hornet ESP32", "DCS Hornet ESP32.vcxproj", "{18CD8965-86B1-4EBC-844A-8E1A83DB9E0A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DCS", "DCS", "{54DD31E8-4B1F-49CF-BFD0-325856D047ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{E6723E4F-E031-4BE8-B7BB-9329B375D876}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\DCS\scripts\Export.lua = ..\..\DCS\scripts\Export.lua
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Helios", "Helios", "{1BA3AFC5-9278-4BAF-B951-8AED03D1677E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\DCS\scripts\Helios\HeliosExport14.lua = ..\..\DCS\scripts\Helios\HeliosExport14.lua
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FA-18C_hornet", "FA-18C_hornet", "{2D988F6D-20A7-4B21-8AFE-D5FADD6AA9AE}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\DCS\scripts\Helios\FA-18C_hornet\ExportUFC.lua = ..\..\DCS\scripts\Helios\FA-18C_hornet\ExportUFC.lua
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +35,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E6723E4F-E031-4BE8-B7BB-9329B375D876} = {54DD31E8-4B1F-49CF-BFD0-325856D047ED}
+		{1BA3AFC5-9278-4BAF-B951-8AED03D1677E} = {E6723E4F-E031-4BE8-B7BB-9329B375D876}
+		{2D988F6D-20A7-4B21-8AFE-D5FADD6AA9AE} = {1BA3AFC5-9278-4BAF-B951-8AED03D1677E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {225E5DE8-F114-4D8D-BF4D-1390285A450D}
 	EndGlobalSection
 EndGlobal
