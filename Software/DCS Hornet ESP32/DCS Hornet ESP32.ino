@@ -235,12 +235,26 @@ char oledUFCstatusBuffer[32];
 
 
 //These are the character displays for the 16 segment channel displays on the UFC
-const uint16_t UFCchannelNumbers[25] = {
-	0x0000,0x000C,0x2816,0x081E,0x0A0C,0x0A1A,0x2A18,0x000E,
-	0x2A1E,0x0A0E,0x22DE,0x00CC,0x28D6,0x08DE,0x0ACC,0x0ADA,
-	0x2AD8,0x00CE,0x2ADE,0x0ACE,0xA27F,0x08FB,0x05CC,0x00F3,
-	0x88BB
+//
+//			   LED segment values
+//           
+//          , 0x0001,       , 0x0002,
+//    0x0080, 0x0100, 0x0200, 0x0400, 0x0004
+//		    , 0x8000,       , 0x0800,
+//    0x0040, 0x4000, 0x2000, 0x1000, 0x0008
+//          , 0x0020,       , 0x0010,
+//
+const uint16_t UFCchannelNumbers[29] = {
+	0x0000, 0x000C, 0x2816, 0x081E, 
+	0x0A0C, 0x0A1A, 0x2A18, 0x000E, 
+	0x2A1E, 0x0A0E, 0x22DE, 0x00CC, 
+	0x28D6, 0x08DE, 0x0ACC, 0x0ADA,
+	0x2AD8, 0x00CE, 0x2ADE, 0x0ACE, 
+	0xA27F, 0x08FB, 0x05CC, 0x00F3, 
+	0x88BB, 0x0503, 0x5030, 0xAA00,
+	0x8800								// final 2 characters are "+" and "-"
 };
+
 // These are the addresses of the sets of two UFCcueing LEDs on the UFC
 const uint8_t UFCcueing[5] = { 1,3,5,7,9};
 
@@ -663,8 +677,14 @@ void processCmd(char * cmdBuffer) {
 		else if (value[1] == 'C') {
 			cmdValue = 23;
 		}
-		else if(value[1] == 'S') {
+		else if (value[1] == 'S') {
 			cmdValue = 24;
+		}
+		else if (value[1] == 'd') {   // down arrow
+			cmdValue = 25;
+		}
+		else if (value[1] == 'e') {   // up arrow
+			cmdValue = 26;
 		}
 		else {
 			//Serial.print("|");Serial.print(value);Serial.println("|");
@@ -1625,9 +1645,14 @@ void idleFunctions(void) {
 			char msg[32];
 			sprintf(msg, "%02d:%02d.%02d", timeInfoNow.tm_hour, timeInfoNow.tm_min, timeInfoNow.tm_sec);
 			UFCDisplay.display(1, msg);
+			UFCDisplay.display(0, "  ");
 			UFCDisplay.display(&msg[2]);
 			UFCDisplay.oduDisplay(1, "LIMA");
 			UFCDisplay.oduDisplay(2, "ZULU");
+			UFCDisplay.oduDisplay(3, "    ");
+			UFCDisplay.oduDisplay(4, "OSET");
+			sprintf(msg," %+03d",gmtOffset_sec / 3600);
+			UFCDisplay.oduDisplay(5, msg);
 			drawPixel(i2c_addr_ufc, UFCcueing[0], 4, LED_ON);
 			drawPixel(i2c_addr_ufc, UFCcueing[1], 4, LED_OFF);
 			displayHT16K33(i2c_addr_ufc);
