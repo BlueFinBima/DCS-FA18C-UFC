@@ -1,6 +1,6 @@
 # DCS-FA18C-UFC
 ### This is a hardware and software project to build an Up Front Controller for the DCS F/A-18C Hornet
-![Hornet UFC with 2020 Acrylic Case](/images/UFC_Acrylic.png)
+![Hornet UFC with the Early 2020 Acrylic Case](/images/UFC_Acrylic.png)
 ### Notes
 
 The HT16K33 isn't too difficult to find, and can be picked up quite cheaply on AliExpress if you are prepared to wait.  The DLG2416 displays are quite expensive from 
@@ -47,6 +47,31 @@ current design that I’m not planning to do this.
 
 I’m going to put a third Cougar MFD in for the AMPCD, but
 I’m still considering how I can do this while keeping the mounting discrete.
+
+#### 2020 Project Update
+With two inidividuals (that I know of) successfully recreating this project, I chose to revisit
+the facial.  I purchased a small SLA 3D printer which allowed me to print smaller key caps, and 
+I was able to paint and use my 2.5W LED Laser to label these.  I also created new comm channel
+selectors, as well as more harmonious knobs (ie not Mil Spec accurate) for the UFC.
+My LED laser will not touch acrylic other than black, so the facia was cut from that material and 
+white polystyrene sheet was then glued to the surface, and painted black.  The LED laser was then 
+used to create the lettering.  While all of this is an improvement, I have to confess to not being 
+very happy with this.   This is in part why the GitHub project has not been updated with these changes.
+![Hornet UFC with Late 2020 Acrylic Facia](/images/2020FaciaDetail.jpg)
+
+#### Thoughts about the future (July 2021)
+Are there going to be further revisions to this project?  Well maybe.  I am considering a V3, primarily 
+to see if I can improve the visuals of the displays, and to see if I can gain some level of crossover with
+the AV-8B which has a similar UFC.  DLG2416's are expensive and difficult to get hold of.  16 segment LED displays
+are also out of fashion, and green ones seem extremely rare.  I have created Eagle drawings for discrete 0603 / 0402
+LED displays which can be charlieplexed and might be coaxed into looking like the 16-segment displays used in the 
+real UFC.  I just need to finalise these plans, and pluck up the courage to use a PCBA service to build a prototype 
+(I have neither the patience nor the skill to solder the volume to LEDs needed).  If I get around to getting a 
+display prototyped *AND* I can work out how to make it look fit for purpose, then I will almost certainly begin
+some work on a V3 of this UFC.
+
+Controlling the very large number of LEDs will also be interesting, but I have been doing some prototyping and it does look possible.
+![Currently on the Breadboard](/images/OnTheBreadboard.jpg)          
 
 ### The History of this Project
 
