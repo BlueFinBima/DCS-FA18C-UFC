@@ -12,9 +12,8 @@
 */
 
 #include "FA18CkeyMappings.h"
+#include "AV8BkeyMappings.h"          // Key mappings for the AV-8B
 #include "FA18CufcDisplay.h"		  // F/A-18C UFC Display function
-//#include <FA18CkeyMappings.h>
-//#include <FA18CufcDisplay.h>        // F/A-18C UFC Display function
 #include <arduino.h>
 #include <U8g2lib.h>                  // Graphics for the OLED graphic display https://www.arduino.cc/reference/en/libraries/u8g2/
 #include <WiFi.h>					  // ESP32 wireless code
@@ -103,33 +102,24 @@ unsigned long time2 = 0;                // Used to calculate loop delay
 #define SWITCHSET 2
 #define SWITCHALREADYDONE 3
 
-											 //
-											 //
-											 //  i2c Constants
-											 //
-											 //  This section is the master list of all of the 12c devices in use in the project
-											 //
+//
+//
+//  i2c Constants
+//
+//  This section is the master list of all of the 12c devices in use in the project
+//
 const uint8_t i2c_addr_other = 0x78;     // dummy i2c address for the simulated HT16K33 used for oddly connected switches
-const uint8_t i2c_addr_cp = 0x77;        // i2c address of the HT16K33 used for the Caution Panel (this board only has indicators)
-const uint8_t i2c_addr_top = 0x76;       // i2c address of the HT16K33 used for the gear and the top line of indicators  *** this board no longer exists ***
-const uint8_t i2c_addr_ufc = 0x71;       // i2c address of the HT16K33 used for the F/A-18C up front controller keys, illuminations, Cues & Comm Channel Displays (This has no indicators)
-const uint8_t i2c_addr_elec = 0x75;     // i2c address of the HT16K33 used for the CMSP and Electrical panel
-const uint8_t i2c_addr_lhs = 0x73;     // i2c address of the HT16K33 used for the LHS switches (This is a general switch board)
-const uint8_t i2c_addr_rhs = 0x72;     // i2c address of the HT16K33 used for the RHS switches (This is a general switch board)
-const uint8_t i2c_addr_test = 0x70;     // i2c address of the HT16K33 used to test new functions										//
-										 //const uint8_t i2c_addr_caution = 0x3F;   // i2c address of the ATtiny85 used for the I2C Master Caution LED (test)
-										 // Note:  The ATTiny85 devices had to move below address 0x40 to avoid a problem with the ESP8266 controller which for some
-										 //        unknown reason would not talk to ATTiny85 devices at higher addresses.  They worked ok with the ATMEL controller
 const uint8_t i2c_addr_ufc_expander = 0x20;  // i2c expander on the F/A-18C UFC which controls the ODU's and main display
 const uint8_t i2c_addr_ufc_mux = 0x70;       // i2c multiplexer on the F/A-18C UFC
-
+const uint8_t i2c_addr_ufc = 0x71;       // i2c address of the HT16K33 used for the F/A-18C up front controller keys, illuminations, Cues & Comm Channel Displays (This has no indicators)
+const uint8_t i2c_addr_landingGear = 0x72;     // i2c address of the HT16K33 used for the RHS switches (This is a general switch board)
 										//
 										//
 										//
 										// List here the highest and lowest i2c address for the HT16K33 chips.  These are managed to 
 										// ensure that only the correct number of buffers are allocated.
 #define LOWEST_I2C_ADDR 0x71            //this is the address of the lowest i2c HT16K33
-#define HIGHEST_I2C_ADDR 0x7A           //this is the address of the highest i2c HT16K33 +2
+#define HIGHEST_I2C_ADDR 0x74           //this is the address of the highest i2c HT16K33 +2
 										//
 
 bool readkeys = false;
@@ -162,53 +152,58 @@ uint8_t lastkeys[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR][6];
 unsigned long switchLastIntTime[HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR + 1];  // this is the time when the last interrupt was seen from the device
 //void connectToWiFi(const char *, const char *);
 
-const uint8_t generalIndicators[3][24] = {  // these are the LED positions for various indicators
-	{15,15,15,             // Gear good x3 These remain on an HT16K33
-	10,                   // Gear Warning *** not certain this is still needed     
-	10,8,6,4,             // indicators on the UFC
-	11,7,5,3               // indicators on the UFC
-	},
-	{5,4,6,
-	7,
-	4,5,6,7,
-	4,5,6,7
+uint8_t ufcType = 0;		// Indicator to support different aircraft types.  Default is F/A-18C
 
+#define NUMBEROFINDICATORS 10
+const uint8_t generalIndicators[3][NUMBEROFINDICATORS] = {  // these are the LED positions for various indicators * * * Do Not Change Order without addjusting cmdOffset usage
+	{
+	12,12,                // Flaps Lights 
+	14,14,14,             // Gear Ready Lights x3 (L,N,R) 
+	13,13,13,      		  // Gear amber lights x3 (launch Bar, SpeedBrake , hook)     
+	15,					  // Landing Gear Lollipop Light
+	11					  // Landing Gear Lollipop Light
 	},
 	{
-		i2c_addr_lhs,i2c_addr_lhs,i2c_addr_lhs,
-	i2c_addr_lhs,
-	i2c_addr_ufc,i2c_addr_ufc,i2c_addr_ufc,i2c_addr_ufc,
-	i2c_addr_ufc,i2c_addr_ufc,i2c_addr_ufc,i2c_addr_ufc
+	6,4,
+	4,6,5,
+	4,6,5,
+	4,
+	6
+	},
+	{
+	i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,
+	i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,
+	i2c_addr_landingGear,
+	i2c_addr_landingGear
 	}
 };
-const uint8_t defaultKeyPositions[7][6] = {  // these are the positions that the keys should be in when the plane is sitting on the apron with power off
-	{ 0x40,0x00,0x00,0x00,0x00,0x00 },  //71 
-	{ 0x00,0x00,0x00,0x00,0x00,0x00 },  //72 
-	{ 0xA0,0x00,0x20,0x00,0x00,0x00 },  //73 
-	{ 0x00,0x00,0x01,0x04,0x6A,0x00 },  //74 
-	{ 0x00,0x00,0x00,0x00,0x00,0x00 },  //75 
-	{ 0x00,0x00,0x00,0x00,0x00,0x00 },  //76 
-	{ 0x00,0x00,0x00,0x00,0x00,0x00 }   //77
+const uint8_t generalIndicatorsAV8B[3][NUMBEROFINDICATORS] = {  // these are the LED positions for various indicators * * * Do Not Change Order without addjusting cmdOffset usage
+	{
+    13,14,13,14, 
+	13,14,12,12,  
+	15,					  // Landing Gear Lollipop Light
+	11					  // Landing Gear Lollipop Light
+	},
+	{
+	6,6,4,4,
+	5,5,6,4,
+	4,
+	6
+	},
+	{
+	i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,
+	i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,i2c_addr_landingGear,
+	i2c_addr_landingGear,
+	i2c_addr_landingGear
+	}
 };
-
-//
-// Place the static text into an array
-const char *Msgs[] = { "    A-10C CMSC  1   \0",
-"  A-10C CMSP  2 \0",
-"   Comms Stopped    \0",
-"    Shutting Down   \0",
-"Incor Switch:\0",
-"   A-10C CMSC Test  \0" };
-//
 
 
 #define MAXENCODERS 16
 float EncoderValues[MAXENCODERS];            // This array holds the values of the encoders which get used when the encoders are reporting as if they are keys
 									//
-const char * boardNames[] = { "Test\0","NMSP\0","SW RHS\0","SW LHS\0","Elec / CMSP\0","Up Front\0","Top Line\0","Caution Panel\0" };
 char displayBuffer[21];
 char i2cBuffer[128];
-
 
 #define LED_ON 1
 #define LED_OFF 0
@@ -221,9 +216,7 @@ int i = 0;
 int j = 0;
 //
 bool commandsReady = false;
-//
-bool inverterState = true;
-bool batteryState = true;
+
 //
 // New devices for the Hornet
 
@@ -232,7 +225,6 @@ FA18CufcDisplay UFCDisplay(i2c_addr_ufc_expander);
 // UFC status OLED
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C oledUFCstatus(U8G2_R2);  //  Rotate display by 180 deg
 char oledUFCstatusBuffer[32];
-
 
 //These are the character displays for the 16 segment channel displays on the UFC
 //
@@ -327,12 +319,12 @@ void setup() {
 	UFCDisplay.clear();
 	oledUFCstatus.begin();                            // Initialise the status OLED on the UFC
 	oledUFCMsg(10, 7, "F/A-18C");
-	oledUFCstatus.drawStr(10, 15, "UFC V0.3");
+	oledUFCstatus.drawStr(10, 15, "UFC V0.5");
 	oledUFCstatus.sendBuffer();
 
 	testI2CScanner();
 
-	muxSelect(7); // Allow 0x73 to be referenced on channel 7
+	muxSelect(0); // Allow 0x72 to be referenced on channel 0
 	for (uint8_t i = 0; i<HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR; i++) {
 		initHT16K33(LOWEST_I2C_ADDR + i);
 		for (uint8_t j = 0; j<6; j++) {
@@ -409,8 +401,8 @@ void setup() {
 
 	displayIP();
 
-	muxSelect(7); // Allow 0x73 to be referenced on channel 1
-	drawPixel(0x73, 15, 7, LED_ON); displayHT16K33(0x73);
+	muxSelect(0); // Allow 0x72 to be referenced on channel 0
+	drawPixel(i2c_addr_landingGear, 15, 7, LED_ON); displayHT16K33(i2c_addr_landingGear);
 	muxSelect(8);
 	UFCBrightness.begin();
 	UFCVolume1.begin();
@@ -442,7 +434,10 @@ void setup() {
 		UFC_Backlight(i2c_addr_ufc, i);
 		delay(200);
 	}
+
 }
+/// <summary>Main processing loop</summary>
+/// <remarks>Polls for UDP data.  Manages periodic functions as well as servicing the key stack and encoders.  This will also flush out any indicator changes.</remarks>
 void loop() {
 	//if (!connected) {
 	//	iotWebConf.doLoop();
@@ -451,7 +446,7 @@ void loop() {
 		ufc_Idle = true;
 		idleFunctions();
 	}
-	if (readSwitches(i2c_addr_ufc) | ProcessEncoders()) {
+	if (readSwitches(i2c_addr_ufc) | readSwitches(i2c_addr_landingGear) | ProcessEncoders()) {
 		// one or more keys have been placed onto the keystack and need to be processed
 		while (keystackCount()>0) {
 			//      breath = false;
@@ -520,25 +515,15 @@ void loop() {
 	}
 	yield();
 	udpCheck();
-	//  
-	// per loop actions
-	//
-	// Flush out the LED changes to the HT16K33 devices which need it
-	for (i = 0; i<HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR; i++) {
-		if (HT16K33Push[i]) {
-			displayHT16K33(LOWEST_I2C_ADDR + i);
-			HT16K33Push[i] = false;
-		}
-	}
+	flushHT16K33();
 }
+/// <summary>Handles the incoming network data</summary>
+/// <remarks>ESP32 handles network data asynchronously</remarks>
 void udpCheck(void) {
 	// This routine is to handle the incoming network data
 	//
 	// Only Receive data when connected
 
-	// ESP32 handles network data asynchronously
-	// so we need different processing
-	//
 	if (packetLen > 0) {
 		if (ufc_Idle) {
 			UFCDisplay.clear();
@@ -645,12 +630,9 @@ char * getCmdValStr(char * cmdBuffer) {
 	}
 	return("\0");
 }
+///<summary>Performs processing on a command received over the Network link</summary>
+///<remarks>Commands have to be explicitly defined in the switch ladder otherwise they are a no-op</remarks>
 void processCmd(char * cmdBuffer) {
-
-	//
-	// this function performs processing on a command which we are interested in.
-	// all of the other commands are nops
-	//
 	float dialVal = 0;
 	int cmdCode = getCmd(cmdBuffer);
 	int cmdValue = 0;
@@ -705,7 +687,7 @@ void processCmd(char * cmdBuffer) {
 		}
 		//Serial.print("cmdValue= ");	Serial.println(cmdValue, DEC);
 		drawCharacter(i2c_addr_ufc,cmdCode-2095, UFCchannelNumbers[cmdValue]);
-		displayHT16K33(i2c_addr_ufc);
+		//displayHT16K33(i2c_addr_ufc);
 		break;
 	case 2082:  // ODU 1
 	case 2083:  // ODU 2
@@ -742,7 +724,6 @@ void processCmd(char * cmdBuffer) {
 		} else if (value[1] == '_') {
 			value = "--";
 		}
-
 		UFCDisplay.display(cmdCode-2092,value);
 		break;
 	case 2094:  // Number Main UFC display
@@ -756,21 +737,139 @@ void processCmd(char * cmdBuffer) {
 		}
 		UFCDisplay.display(value);
 		break;
+	case 163:  // HALF_FLAPS Indicator
+	case 164:  // FULL_FLAPS Indicator
+	case 165:  // Left  Gear Indicator
+	case 166:  // Nose  Gear Indicator
+	case 167:  // Right Gear Indicator
+	{
+		uint8_t cmdOffset = 0;
+		uint8_t l = (cmdCode - 163 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicators[2][l], generalIndicators[0][l], generalIndicators[1][l], ledAction);
+		displayHT16K33(generalIndicators[2][l]);
+		muxSelect(8);
+	}
+	break;
+	case 227:  // Landing Gear Lollipop
+	{
+		uint8_t cmdOffset = 8;
+		uint8_t l = (cmdCode - 227 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicators[2][l], generalIndicators[0][l], generalIndicators[1][l], ledAction);
+		displayHT16K33(generalIndicators[2][l]);
+		muxSelect(8);
+	}
+	break;
+	case 294:  // Hook light
+	{
+		uint8_t cmdOffset = 7;
+		uint8_t l = (cmdCode - 294 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicators[2][l], generalIndicators[0][l], generalIndicators[1][l], ledAction);
+		displayHT16K33(generalIndicators[2][l]);
+		muxSelect(8);
+	} 
+	break;
+	case 19:  // Speed Brake light
+	{
+		uint8_t cmdOffset = 6;
+		uint8_t l = (cmdCode - 19 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicators[2][l], generalIndicators[0][l], generalIndicators[1][l], ledAction);
+		displayHT16K33(generalIndicators[2][l]);
+		muxSelect(8);
+	}
+	break;
+	case 23:  // Launch Bar light
+	{
+		uint8_t cmdOffset = 5;
+		uint8_t l = (cmdCode - 23 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicators[2][l], generalIndicators[0][l], generalIndicators[1][l], ledAction);
+		displayHT16K33(generalIndicators[2][l]);
+		muxSelect(8);
+	}
+	break;
+	// AV-8B Indicators
+	case 462:  // AV-8B Nose Gear Warning
+	case 463:  // AV-8B Nose Gear Ready
+	case 464:  // AV-8B Left Wheel Warning
+	case 465:  // AV-8B Left Wheel Ready
+	case 466:  // AV-8B Right Wheel Warning
+	case 467:  // AV-8B Right Wheel Ready
+	case 468:  // AV-8B Main Gear Ready
+	case 469:  // AV-8B Main Gear Warning
+	{
+		uint8_t cmdOffset = 0;
+		uint8_t l = (cmdCode - 462 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicatorsAV8B[2][l], generalIndicatorsAV8B[0][l], generalIndicatorsAV8B[1][l], ledAction);
+		displayHT16K33(generalIndicatorsAV8B[2][l]);
+		muxSelect(8);
+	}
+	break;
+	case 446:  // AV-8B Landing Gear Lollipop
+	{
+		uint8_t cmdOffset = 8;
+		uint8_t l = (cmdCode - 446 + cmdOffset);
+		uint8_t ledAction = LED_OFF;
+		if (cmdValue == 1) ledAction = LED_ON;
+		muxSelect(0);
+		drawPixel(generalIndicatorsAV8B[2][l], generalIndicatorsAV8B[0][l], generalIndicatorsAV8B[1][l], ledAction);
+		displayHT16K33(generalIndicatorsAV8B[2][l]);
+		muxSelect(8);
+	}
+	break;
+	case 65535: // configuration command
+	{
+		switch (getCmdValint(cmdBuffer)) {
+		case 0: {
+			ufcType = 0; // F/A-18C
+		}
+				break;
+		case 1: {
+			ufcType = 1; // AV-8B
+		}
+				break;
+		default: {
+			ufcType = 0; // F/A-18C
+		}
+			break;
+		}
+	}
+	break;
 	default:
 		Serial.println("Command Unknown");
 		break;
 	}
 }
+///<summary>Sends Device Codes over the network</summary>
+///<remarks>Responds to the commandReady boolean</remarks>
 void processOutput(char * replyBuffer) {
-
+	Serial.println(replyBuffer);
 	udp.writeTo((const uint8_t*)replyBuffer, strlen(replyBuffer),ipRemote,portRemote);
 	commandsReady = false;
-
 }
 bool readSwitches(uint8_t i2c_address) {
-	// testing suggests that once the switches are read, it takes around 19ms before another interrupt
-	// will occur, even if the key is held down for the whole time.
-
+	// Testing suggests that once the HT16K33 switches are read, it takes around 19ms before another interrupt
+	// will occur, even if the key is held down for the whole time. This ties up with the HT16K33's 20ms debounce mechanism.
+	// Therefore there is no point reading the interrupt flag more frequently than the debounce period.
+	// The int flag stays set until all six bytes of key ram has been read, and then it gets reset. 
+	// Key data accummulates in RAM until it is read and cleared.
+	//
 	// this code can be in one of 4 states
 	// 1 - no keys are pressed and everything dealt with (this is the normal state)
 	// 2 - Interrupt set and one or more keys have been pressed - The interrupt might be set for a new key and we need to spot that an old key has been released
@@ -779,15 +878,15 @@ bool readSwitches(uint8_t i2c_address) {
 	//
 	// For this reason, we need to maintain a map of all of the keys which have transitioned from on to off, so that we can raise a keypress event
 	// and communicate that the key has now been released.
-	// Because we do not get an interupt for a key being released, we need to remember that there is work to be done for the scan after the last 
+	// Because we do not get an interrupt for a key being released, we need to remember that there is work to be done for the scan after the last 
 	// interrupt.   
 
 	boolean keypressed = false;
 	boolean keychanged = false;
 	uint8_t keydataavail;
-
+	if (i2c_address == i2c_addr_landingGear) muxSelect(0);
 	keydataavail = keydataavailable(i2c_address);
-	//Serial.print(" keydataavailable(): ");Serial.print(i2c_address,HEX);Serial.print(" - ");Serial.println(keydataavail,HEX);
+	// Serial.print(" keydataavailable(): "); Serial.print(i2c_address, HEX); Serial.print(" - "); Serial.println(keydataavail, HEX);
 
 	switch (keydataavail) {
 	case SWITCHSET:
@@ -813,7 +912,8 @@ bool readSwitches(uint8_t i2c_address) {
 				// New keys being pressed
 				uint8_t trans = ~lastkeys[i2c_address - LOWEST_I2C_ADDR][i] & keys[i2c_address - LOWEST_I2C_ADDR][i];  // find out if any keys were newly pressed
 				if (trans != 0x00) {
-					//printkeys();
+					//Serial.print("Pressed  ");
+					//printkeys(i2c_address);
 					// we have found at least one key which has been newly pressed ie it was not set last time but is set now.
 					for (uint8_t j = 0; j<8; j++) {
 						if (0x01 & (trans >> j)) {
@@ -825,7 +925,8 @@ bool readSwitches(uint8_t i2c_address) {
 				// New keys which have been released
 				trans = ~keys[i2c_address - LOWEST_I2C_ADDR][i] & lastkeys[i2c_address - LOWEST_I2C_ADDR][i];  // find out if any keys were newly released
 				if (trans != 0x00) {
-					//printkeys();
+					//Serial.print("Released ");
+					//printkeys(i2c_address);
 					// we have found at least one key which has been newly released ie it was set last time but is not set now.
 					for (uint8_t j = 0; j<8; j++) {
 						if (0x01 & (trans >> j)) {
@@ -858,6 +959,7 @@ bool readSwitches(uint8_t i2c_address) {
 		keypressed = false;
 		break;
 	}
+	muxSelect(8);
 	return keypressed;  // let caller know that we have some key data
 }
 void getOtherSwitchData(uint8_t i2c_address) {
@@ -866,10 +968,14 @@ void getOtherSwitchData(uint8_t i2c_address) {
 	// the processing of the key presses, we use a dummy code from an HT16K33
 	return;
 }
+///
 int keydataavailable(uint8_t i2c_address) {
 	//
 	// Testing suggests that once the HT16K33 switches are read, it takes around 19ms before another interrupt
-	// will occur, even if the key is held down for the whole time. This only refers to the switches on a HT16K33
+	// will occur, even if the key is held down for the whole time. This ties up with the HT16K33's 20ms debounce mechanism.
+	// Therefore there is no point reading the interrupt flag more frequently than the debounce period.
+	// The int flag stays set until all six bytes of key ram has been read, and then it gets reset. 
+	// Key data accummulates in RAM until it is read and cleared.
 	//
 	// This routine also attempts to mimic an interrupt for the last key being released so the first
 	// time the interrupt flag is checked after it has been set, we will still report that the interrupt
@@ -880,7 +986,7 @@ int keydataavailable(uint8_t i2c_address) {
 	int retvalue = SWITCHNONE;
 	byte interrupt_flag = 0;;
 	time1 = micros();                            // only do a call to the clock once
-	if (time1 - switchLastIntTime[i2c_address - LOWEST_I2C_ADDR] > 20000) {  // only check the interrupt if it has had time to get set
+	if (time1 - switchLastIntTime[i2c_address - LOWEST_I2C_ADDR] > 20000) {  // only check the interrupt if it has had time to get set after a debounce period
 		switch (i2c_address) {
 		case i2c_addr_other:
 			// for this pseudo-device there is no interrupt to test and it is multiple devices in reality
@@ -904,13 +1010,12 @@ int keydataavailable(uint8_t i2c_address) {
 			Wire.endTransmission();
 			Wire.requestFrom(i2c_address, (byte)1);    // read the interrupt status
 			while (Wire.available()) {                 // slave may send less than requested
-				interrupt_flag = Wire.read();             // receive a byte as character
+				interrupt_flag = Wire.read();          // receive a byte as character
 			}
-			/*
-			if(interrupt_flag){
-			Serial.print("HT16K33 Interrupt from ");Serial.print(i2c_address,HEX);Serial.print(" : ");Serial.println(interrupt_flag,HEX);
-			}
-			*/
+			//if(interrupt_flag & i2c_address == i2c_addr_landingGear){
+			//	Serial.print("HT16K33 Interrupt from ");Serial.print(i2c_address,HEX);Serial.print(" : ");Serial.println(interrupt_flag,HEX);
+			//}
+
 			break;
 		}
 		if (interrupt_flag) {
@@ -918,21 +1023,22 @@ int keydataavailable(uint8_t i2c_address) {
 			return SWITCHSET;                                         // this means that there was a valid interrupt
 		}
 		else {
-			// so no interrupt and we've left enough time for it to have occurred/
-			// if the interrupt had been pressed on the last pass then we will return an interrupt
+			// so no interrupt and we've left enough time for it to have occurred.
+			// If the interrupt had been pressed on the last pass then we will return an interrupt
 			// so that the released keys can be processed, otherwise we simply return a no keys response
 			// we use the last interrupt time to determine this.  
 			if (switchLastIntTime[i2c_address - LOWEST_I2C_ADDR] == 0) {
+				//switchLastIntTime[i2c_address - LOWEST_I2C_ADDR] = time1;  //create delay before triggering again
 				return SWITCHNONE;                        // no switch was pressed
 			}
 			else {
-				switchLastIntTime[i2c_address - LOWEST_I2C_ADDR] = 0;   // say no dummy interrupt is needed next time
+				switchLastIntTime[i2c_address - LOWEST_I2C_ADDR] = 0; // say no dummy interrupt is needed next time
 				return SWITCHSET;                                     // say a key was pressed even though none was to allow the released key to be processed
 			}
 		}
 	}
 	else {
-		// it is too soon for another interupt to be set so we want to return saying 
+		// it is too soon for another interrupt to be set so we want to return saying 
 		// that it is too short a time since the last interupt to process switch data.
 		return SWITCHWAIT;  // Too early
 	}
@@ -1031,7 +1137,6 @@ boolean ProcessOnboardEncoders(void) {
 	}
 	else return false;
 }
-
 void IRAM_ATTR UFCBrightnessISR()
 {
 	UFCBrightness.readAB();
@@ -1084,37 +1189,11 @@ void drawPixel(uint8_t i2c_address, int16_t x, int16_t y, uint16_t color) {
 	else {
 		displaybuffer[i2c_address - LOWEST_I2C_ADDR][y] &= ~(1 << x);
 	}
+	HT16K33Push[i2c_address - LOWEST_I2C_ADDR] = true;
 }
 void drawCharacter(uint8_t i2c_address, int16_t x, int16_t y) {
 	if ((x < 0) || (x >= 2)) return;
 	displaybuffer[i2c_address - LOWEST_I2C_ADDR][x] = y;
-}
-void displayHT16K33(uint8_t i2c_address)
-{
-	Wire.beginTransmission(i2c_address);
-	Wire.write((uint8_t)0x00); // start at address $00
-	for (uint8_t i = 0; i<8; i++) {
-		Wire.write(displaybuffer[i2c_address - LOWEST_I2C_ADDR][i] & 0xFF);
-		Wire.write(displaybuffer[i2c_address - LOWEST_I2C_ADDR][i] >> 8);
-	}
-	Wire.endTransmission();
-}
-void initHT16K33(uint8_t i2c_address)
-{
-	//Wire.begin();
-	Wire.beginTransmission(i2c_address);
-	Wire.write(0x21);  // turn on oscillator
-	Wire.endTransmission();
-	Wire.beginTransmission(i2c_address);
-	Wire.write(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (0 << 1));
-	Wire.endTransmission();
-	Wire.beginTransmission(i2c_address);
-	Wire.write(HT16K33_CMD_BRIGHTNESS | HT16K33_DEFAULT_BRIGHTNESS);
-	Wire.endTransmission();
-	Wire.beginTransmission(i2c_address);
-	Wire.write(HT16K33_KEY_ROWINT_ADDR | 0);
-	Wire.endTransmission();
-	displayClear(i2c_address);
 }
 void displayClear(uint8_t i2c_address) {
 	Wire.beginTransmission(i2c_address);
@@ -1129,13 +1208,62 @@ void displayClear(uint8_t i2c_address) {
 void getSwitchData(uint8_t i2c_address) {
 	// get the six bytes of switch memory from the i2c bus
 	uint8_t i;
-	Wire.beginTransmission(i2c_address);
-	Wire.write(HT16K33_KEY_RAM_ADDR);
-	Wire.endTransmission();
-	Wire.requestFrom(i2c_address, (byte)6);		// try to read the six bytes containing the key presses
-	i = 0;
-	while (Wire.available()) {                  // slave may send less than requested
-		keys[i2c_address - LOWEST_I2C_ADDR][i++] = Wire.read();  // receive a byte as character 
+	if (i2c_address != i2c_addr_landingGear) {
+		Wire.beginTransmission(i2c_address);
+		Wire.write(HT16K33_KEY_RAM_ADDR);
+		Wire.endTransmission();
+		Wire.requestFrom(i2c_address, (byte)6);		// try to read the six bytes containing the key presses
+		i = 0;
+		while (Wire.available()) {           // slave may send less than requested
+			keys[i2c_address - LOWEST_I2C_ADDR][i++] = Wire.read();  // receive a byte as character
+		}
+	}
+	else {
+		uint8_t tempkeys[2][6];
+		delay(25);
+		Wire.beginTransmission(i2c_address);
+		Wire.write(HT16K33_KEY_RAM_ADDR);
+		Wire.endTransmission();
+		Wire.requestFrom(i2c_address, (byte)6);		// try to read the six bytes containing the key presses
+		i = 0;
+		while (Wire.available()) {           // slave may send less than requested
+			tempkeys[0][i++] = Wire.read();  // receive a byte as character
+		}
+		if (i < 5) {
+			Serial.print("* * * HT16K33 KEYRAM read less than expected "); Serial.print(" - 0x"); Serial.print(i2c_address, HEX); Serial.print(" - "); Serial.println(i, DEC);
+		}
+		// this device seems to be a little noisy so we read the key ram a second time
+		// and hope that it matches the first read.  If it does not, then we ignore the data
+		//
+		// This is horribly inefficient, but until the hardware issue is diagnosed and fixed, this is the best
+		// we have. 
+		delay(25);  // to allow the HT16K33 time to rescan
+		Wire.beginTransmission(i2c_address);
+		Wire.write(HT16K33_KEY_RAM_ADDR);
+		Wire.endTransmission();
+		Wire.requestFrom(i2c_address, (byte)6);		// try to read the six bytes containing the key presses
+		i = 0;
+		while (Wire.available()) {                  // slave may send less than requested
+			tempkeys[1][i++] = Wire.read();			// receive a byte as character 
+		}
+		// We now have two reads which need to be compared
+		if (!kequals(tempkeys[0], tempkeys[1])) {
+
+			//Serial.println("0 and 1 are not the same");
+			//for (j = 0; j < 2; j++) {
+			//	Serial.print("HT16K33 KEYRAM read "); Serial.print(j, DEC); Serial.print(" - "); Serial.print(i2c_address, HEX); Serial.print(" - 0x");
+			//	for (i = 0; i < 6; i++) {
+			//		Serial.print(tempkeys[j][i] <= 15 ? "0" : "");
+			//		Serial.print(tempkeys[j][i], HEX);
+			//	}
+			//	Serial.println();
+			//}
+		}
+		else {
+			for (i = 0; i < 6; i++) {
+				keys[i2c_address - LOWEST_I2C_ADDR][i] = tempkeys[0][i];
+			}
+		}
 	}
 }
 void checkLight(uint8_t i2c_address, int16_t x, int16_t y, uint8_t parm)
@@ -1288,14 +1416,32 @@ void keystackPeek(int16_t *sp) {
 boolean convertKey(int16_t *sp, int16_t keycode) {
 	// this function returns a pointer to an array containing the key information found from the HT16K33 
 
-	for (uint8_t i = 0; i< FA18KEYMAPPINGS_MAXKEYS && keyMappings[0][i] > 0; i++) {
-		if (keyMappings[0][i] == keycode) {
-			sp[0] = keyMappings[1][i] + 3000;
-			sp[1] = keyMappings[2][i];
-			sp[2] = keyMappings[3][i];
-			//Serial.print("ConvertKey(): ");Serial.print(i,DEC);Serial.print(":");Serial.print(sp[0]);Serial.print(":");Serial.print(sp[1]);Serial.print(":");Serial.print(sp[2]);Serial.print(":");Serial.println(keycode);
-			return true;
+	switch (ufcType) {
+		case 1: {
+			// Serial.println("Converting to AV-8B key.");
+			for (uint8_t i = 0; i < FA18KEYMAPPINGS_MAXKEYS && keyMappingsAV8B[0][i] > 0; i++) {
+				if (keyMappingsAV8B[0][i] == keycode) {
+					sp[0] = keyMappingsAV8B[1][i] + 3000;
+					sp[1] = keyMappingsAV8B[2][i];
+					sp[2] = keyMappingsAV8B[3][i];
+					//Serial.print("ConvertKey(): ");Serial.print(i,DEC);Serial.print(":");Serial.print(sp[0]);Serial.print(":");Serial.print(sp[1]);Serial.print(":");Serial.print(sp[2]);Serial.print(":");Serial.println(keycode);
+					return keyMappingsAV8B[4][i] < 9 ? true : false;
+				}
+			}
 		}
+		break;
+		default:{
+			for (uint8_t i = 0; i < FA18KEYMAPPINGS_MAXKEYS && keyMappings[0][i] > 0; i++) {
+				if (keyMappings[0][i] == keycode) {
+					sp[0] = keyMappings[1][i] + 3000;
+					sp[1] = keyMappings[2][i];
+					sp[2] = keyMappings[3][i];
+					//Serial.print("ConvertKey(): ");Serial.print(i,DEC);Serial.print(":");Serial.print(sp[0]);Serial.print(":");Serial.print(sp[1]);Serial.print(":");Serial.print(sp[2]);Serial.print(":");Serial.println(keycode);
+					return keyMappings[4][i] < 9 ? true : false;
+				}
+			}
+		}
+		break;
 	}
 	sp[0] = 0;
 	sp[1] = 0;
@@ -1365,7 +1511,6 @@ void handleRoot()
 
 	server.send(200, "text/html", s);
 }
-
 boolean htmlFormValidator()
 {
 	Serial.println(F("Validating form."));
@@ -1535,33 +1680,39 @@ void testAll() {
 
 
 	// this routine is to test all of the sub-section tests, sets a delay and then turns off the test
-
-	checkLight(i2c_addr_lhs, 15, 7, 1);                  // turn on the indicator LED on LHS switch board
-	displayHT16K33(i2c_addr_lhs);
-	checkLight(i2c_addr_rhs, 15, 7, 1);                  // turn on the indicator LED on RHS switch board
-	displayHT16K33(i2c_addr_rhs);
+	muxSelect(0);
+	checkLight(i2c_addr_landingGear, 15, 7, 1);            // turn on the indicator LED on landing gear LHS switch board
+	checkLight(i2c_addr_landingGear, 15, 4, 1);            // turn on the indicator LED inside the landing gear lollipod
+	displayHT16K33(i2c_addr_landingGear);
+	muxSelect(8);
+	//checkLight(i2c_addr_rhs, 15, 7, 1);                  // turn on the indicator LED on RHS switch board
+	//displayHT16K33(i2c_addr_rhs);
 
 	testGeneral();
 	testUFC(i2c_addr_ufc);
 
 	delay(500);
-	displayClear(i2c_addr_lhs);
-	displayHT16K33(i2c_addr_lhs);
-	displayClear(i2c_addr_rhs);
-	displayHT16K33(i2c_addr_rhs);
-	displayClear(i2c_addr_cp);
-	displayHT16K33(i2c_addr_cp);
+	muxSelect(0);
+	displayClear(i2c_addr_landingGear);
+	displayHT16K33(i2c_addr_landingGear);
+	muxSelect(8);
+	//displayClear(i2c_addr_rhs);
+	//displayHT16K33(i2c_addr_rhs);
+	//displayClear(i2c_addr_cp);
+	//displayHT16K33(i2c_addr_cp);
 	displayClear(i2c_addr_ufc);
 	displayHT16K33(i2c_addr_ufc);
 
 }
 void testGeneral(void) {
 	// Set various LEDs as defined in an array of oddball i2c LEDs
-	for (uint8_t i = 0; i<24; i++) {
+	muxSelect(0);
+	for (uint8_t i = 0; i< NUMBEROFINDICATORS; i++) {
 		drawPixel(generalIndicators[2][i], generalIndicators[0][i], generalIndicators[1][i], LED_ON);
 		displayHT16K33(generalIndicators[2][i]);
 		delay(20);
 	}
+	muxSelect(8);
 }
 void testUFC(uint8_t i2c_addr) {
 	UFCDisplay.clear();
@@ -1613,7 +1764,6 @@ void configUFCMessage(void) {
 	UFCDisplay.oduDisplay(4, &msg[24]);
 	UFCDisplay.oduDisplay(5, &msg[28]);
 }
-
 void DLG2416_Brightness(uint8_t channel, uint32_t value) {
 	// Arduino like analogWrite
 	// value has to be between 0 and valueMax
@@ -1665,4 +1815,59 @@ void idleFunctions(void) {
 		drawPixel(i2c_addr_ufc, UFCcueing[1], 4, LED_OFF);
 		displayHT16K33(i2c_addr_ufc);
 	}
+}
+void printkeys(uint8_t i2c_address) {
+	Serial.print("printkeys("); Serial.print(i2c_address, HEX); Serial.print(") - ");
+	for (i = 0; i < 6; i++) {
+		Serial.print(keys[i2c_address - LOWEST_I2C_ADDR][i] < 16 ? "0" : "");
+		Serial.print(keys[i2c_address - LOWEST_I2C_ADDR][i], HEX);
+	}
+	Serial.println();
+}
+bool kequals(uint8_t a[], uint8_t b[]) {
+	bool test = true;
+	for (i = 0; i < 6; i++) {
+		if (a[i] != b[i]) test = false;
+	}
+	return test;
+}
+/// <summary>Save LED status to the HT16K33 chips which need it</summary>
+/// <remarks>There is a boolean array which indicates which HT16K33 chips have had LEDs set or reset and need their display data sent to them.</remarks> 
+void flushHT16K33(void) {
+	// Flush out the LED changes to the HT16K33 devices which need it
+	for (i = 0; i < HIGHEST_I2C_ADDR - LOWEST_I2C_ADDR; i++) {
+		if (HT16K33Push[i]) {
+			if (i == 1) muxSelect(0);
+			displayHT16K33(LOWEST_I2C_ADDR + i);
+			HT16K33Push[i] = false;
+			if (i == 1) muxSelect(8);
+		}
+	}
+}
+void displayHT16K33(uint8_t i2c_address)
+{
+	Wire.beginTransmission(i2c_address);
+	Wire.write((uint8_t)0x00); // start at address $00
+	for (uint8_t i = 0; i < 8; i++) {
+		Wire.write(displaybuffer[i2c_address - LOWEST_I2C_ADDR][i] & 0xFF);
+		Wire.write(displaybuffer[i2c_address - LOWEST_I2C_ADDR][i] >> 8);
+	}
+	Wire.endTransmission();
+}
+void initHT16K33(uint8_t i2c_address)
+{
+	//Wire.begin();
+	Wire.beginTransmission(i2c_address);
+	Wire.write(0x21);  // turn on oscillator
+	Wire.endTransmission();
+	Wire.beginTransmission(i2c_address);
+	Wire.write(HT16K33_BLINK_CMD | HT16K33_BLINK_DISPLAYON | (0 << 1));
+	Wire.endTransmission();
+	Wire.beginTransmission(i2c_address);
+	Wire.write(HT16K33_CMD_BRIGHTNESS | HT16K33_DEFAULT_BRIGHTNESS);
+	Wire.endTransmission();
+	Wire.beginTransmission(i2c_address);
+	Wire.write(HT16K33_KEY_ROWINT_ADDR | 0);
+	Wire.endTransmission();
+	displayClear(i2c_address);
 }
