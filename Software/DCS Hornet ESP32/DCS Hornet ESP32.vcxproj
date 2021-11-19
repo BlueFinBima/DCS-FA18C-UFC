@@ -83,7 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\libraries\FA18CufcDisplay\FA18CufcDisplay.h" />
-    <ClInclude Include="AV8BkeyMappings.h" />
     <ClInclude Include="FA18CkeyMappings.h" />
     <ClInclude Include="RotaryEncoder.h" />
     <ClInclude Include="RotaryEncoderAdvanced.h" />

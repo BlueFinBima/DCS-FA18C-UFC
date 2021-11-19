@@ -11,8 +11,7 @@
 * 
 */
 
-#include "FA18CkeyMappings.h"
-#include "AV8BkeyMappings.h"          // Key mappings for the AV-8B
+#include "FA18CkeyMappings.h"         // Key mappings for all of the aircraft supported by the UFC
 #include "FA18CufcDisplay.h"		  // F/A-18C UFC Display function
 #include <arduino.h>
 #include <U8g2lib.h>                  // Graphics for the OLED graphic display https://www.arduino.cc/reference/en/libraries/u8g2/
@@ -1415,33 +1414,14 @@ void keystackPeek(int16_t *sp) {
 }
 boolean convertKey(int16_t *sp, int16_t keycode) {
 	// this function returns a pointer to an array containing the key information found from the HT16K33 
-
-	switch (ufcType) {
-		case 1: {
-			// Serial.println("Converting to AV-8B key.");
-			for (uint8_t i = 0; i < FA18KEYMAPPINGS_MAXKEYS && keyMappingsAV8B[0][i] > 0; i++) {
-				if (keyMappingsAV8B[0][i] == keycode) {
-					sp[0] = keyMappingsAV8B[1][i] + 3000;
-					sp[1] = keyMappingsAV8B[2][i];
-					sp[2] = keyMappingsAV8B[3][i];
-					//Serial.print("ConvertKey(): ");Serial.print(i,DEC);Serial.print(":");Serial.print(sp[0]);Serial.print(":");Serial.print(sp[1]);Serial.print(":");Serial.print(sp[2]);Serial.print(":");Serial.println(keycode);
-					return keyMappingsAV8B[4][i] < 9 ? true : false;
-				}
-			}
+	for (uint8_t i = 0; i < FA18KEYMAPPINGS_MAXKEYS && keyMappings[i] > 0; i++) {
+		if (keyMappings[i] == keycode) {
+			sp[0] = keyMappingResults[ufcType][0][i] + 3000;
+			sp[1] = keyMappingResults[ufcType][1][i];
+			sp[2] = keyMappingResults[ufcType][2][i];
+			//Serial.print("ConvertKey(): ");Serial.print(i,DEC);Serial.print(":");Serial.print(sp[0]);Serial.print(":");Serial.print(sp[1]);Serial.print(":");Serial.print(sp[2]);Serial.print(":");Serial.println(keycode);
+			return keyMappingResults[ufcType][3][i] < 9 ? true : false;
 		}
-		break;
-		default:{
-			for (uint8_t i = 0; i < FA18KEYMAPPINGS_MAXKEYS && keyMappings[0][i] > 0; i++) {
-				if (keyMappings[0][i] == keycode) {
-					sp[0] = keyMappings[1][i] + 3000;
-					sp[1] = keyMappings[2][i];
-					sp[2] = keyMappings[3][i];
-					//Serial.print("ConvertKey(): ");Serial.print(i,DEC);Serial.print(":");Serial.print(sp[0]);Serial.print(":");Serial.print(sp[1]);Serial.print(":");Serial.print(sp[2]);Serial.print(":");Serial.println(keycode);
-					return keyMappings[4][i] < 9 ? true : false;
-				}
-			}
-		}
-		break;
 	}
 	sp[0] = 0;
 	sp[1] = 0;
@@ -1451,8 +1431,8 @@ boolean convertKey(int16_t *sp, int16_t keycode) {
 int16_t realKey(int16_t keycode) {
 	// this function returns the index into the keycode array if found or -1 if not found
 
-	for (int16_t i = 0; i< FA18KEYMAPPINGS_MAXKEYS && keyMappings[0][i] > 0; i++) {
-		if (keyMappings[0][i] == keycode) {
+	for (int16_t i = 0; i< FA18KEYMAPPINGS_MAXKEYS && keyMappings[i] > 0; i++) {
+		if (keyMappings[i] == keycode) {
 			return i;
 		}
 	}
